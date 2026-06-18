@@ -230,7 +230,6 @@ The Leiden resolution parameter and random seed will be fixed before
 testing community enrichment.
 
 
---------------Begin Editing-------------------
 ## Mendelian and rare large-effect seed genes
 
 Seed genes will be defined independently of the common-variant GWAS
@@ -242,22 +241,16 @@ Primary seed set:
 
 * the curated abnormal-skeletal-growth gene set reported by
   Yengo et al. 2022;
-* use the autosomal subset when the GWAS analysis is restricted to
-  autosomes.
+* because the GWAS analyses are restricted to autosomes,
+  only autosomal seed genes will be used.
 
 This set includes genes involved in Mendelian disorders characterized
 by abnormal stature, skeletal growth, short stature, tall stature,
 overgrowth, skeletal dysplasia, or related growth phenotypes.
 
-Sensitivity seed set:
-
-* genes with ClinGen Definitive or Strong gene–disease evidence for
-  disorders in which abnormal linear or skeletal growth is a central
-  phenotype.
-
 ### Alzheimer seeds
 
-Primary seed set:
+Primary seed set examples:
 
 * APP
 * PSEN1
@@ -273,20 +266,12 @@ Evidence sources may include:
 * OMIM;
 * a predefined published familial-Alzheimer review.
 
-Sensitivity seed set:
-
-* an expanded early-onset or familial Alzheimer gene set;
-* its source and inclusion criteria must be finalized before examining
-  the Alzheimer proximity results.
-
 ### Overlap handling
 
-Some seed genes may also have common-variant GWAS evidence.
-
-Proximity analyses will therefore be run:
-
-1. including overlapping seed and GWAS genes;
-2. excluding overlapping genes.
+Seed genes will be excluded from the tested GWAS gene set when evaluating
+the association between MAGMA Z-score and network proximity to the seed
+set. This avoids inflating proximity results by allowing seed genes to be
+scored as maximally close to themselves.
 
 ## Network propagation
 
@@ -299,17 +284,8 @@ Primary restart probability:
 r=0.5
 ]
 
-Sensitivity values:
-
-[
-r\in{0.3,0.7}
-]
-
 Each gene will receive an RWR score. A higher score means the gene is
 more strongly connected to the seed genes through the network.
-
-Shortest-path distance to the nearest seed gene will be reported as a
-secondary descriptive measure.
 
 ## Primary analyses
 
@@ -319,24 +295,8 @@ Question:
 
 > Is gene-level GWAS evidence associated with node degree?
 
-Primary model:
-
-[
-\text{MAGMA Z-score}
-\sim
-\log(1+\text{degree})
-+
-\text{covariates}
-+
-\text{community}
-]
-
 The primary coefficient is the association between node degree and
 MAGMA Z-score.
-
-Secondary analysis:
-
-* binary Bonferroni-significant MAGMA gene as the outcome.
 
 ### 2. Community enrichment analysis
 
@@ -348,13 +308,18 @@ Questions:
 > Does community membership explain variation in GWAS evidence beyond
 > individual gene characteristics?
 
-Two complementary analyses will be used:
+The primary analysis will compare continuous MAGMA gene-level Z-scores
+across Leiden communities.
 
-1. binary enrichment of significant GWAS genes in each community;
-2. continuous comparison of MAGMA Z-scores across communities.
+Community membership will be tested as a predictor of MAGMA Z-score,
+while adjusting for relevant gene-level covariates such as degree,
+gene length, number of SNPs included in the MAGMA gene test, and
+publication count. We adjust because a community may look important 
+just because its genes are long, contain more SNPs, are highly 
+connected, or are better studied.
 
-False-discovery-rate correction will be applied across community tests
-within each trait.
+False-discovery-rate correction will be applied across community-level
+tests within each trait.
 
 ### 3. Mendelian-seed proximity analysis
 
@@ -363,28 +328,32 @@ Question:
 > Do genes with stronger common-variant GWAS evidence lie closer in the
 > network to independently defined Mendelian or rare large-effect genes?
 
-Primary model:
-
-[
-\text{MAGMA Z-score}
-\sim
-\text{RWR score}
-+
-\text{covariates}
-]
-
 A positive RWR coefficient means that genes more strongly connected to
 the seed genes tend to have stronger GWAS evidence.
 
 The observed seed result will be compared with random seed sets matched
-on:
-
-* number of genes;
-* node degree;
-* publication count;
-* network component.
+on number of genes, node degree, publication count, network component.
 
 The real network will remain fixed during these permutations.
+Only the observed and random seed labels change.
+
+This is to confirm that GWAS genes are closer to observed seed genes
+than expected for genes with similar connectedness, publication 
+attention, and network location.
+
+## Research-attention adjustment
+
+An argument is that the scientific literature partly shapes protein-interaction networks, 
+and that genes that have been studied more extensively are more likely to have recorded 
+protein interactions, better annotations, and higher apparent network connectivity.
+
+This extends the argument to say that a gene may appear highly connected or close to 
+Mendelian seed genes, partly because it is well studied, not necessarily because it 
+is biologically more central to the trait.
+
+To account for this, publication count will be included as a proxy for research attention. 
+Publication count will be calculated as the number of unique PubMed records linked to each gene,
+using NCBI `gene2pubmed` or an equivalent gene-publication mapping source.
 
 ## Required covariates
 
@@ -392,12 +361,8 @@ Connectivity and proximity models will account for:
 
 * gene length;
 * number of SNPs included in the MAGMA gene test;
-* (\log(\text{publication count}+1));
+* publication count
 * network community.
-
-The precise treatment of community as a fixed or random effect will be
-selected based on the number and size of the detected communities and
-will be documented before the confirmatory Alzheimer analysis.
 
 Models will be reported both with and without publication-count
 adjustment.
@@ -406,7 +371,7 @@ adjustment.
 
 The three primary analyses will be interpreted jointly.
 
-### Pattern consistent with a core–peripheral or omnigenic-like signature
+### Pattern consistent with an omnigenic-like signature
 
 * GWAS evidence is broadly distributed;
 * higher RWR proximity to Mendelian seeds predicts stronger GWAS
@@ -414,10 +379,7 @@ The three primary analyses will be interpreted jointly.
 * the pattern is not confined to only one or two communities;
 * the result is directionally consistent across STRING and BioGRID.
 
-This would support a PPI-based core–peripheral signature. It would not
-prove the complete omnigenic model.
-
-### Pattern consistent with a modular or stratagenic-like signature
+### Pattern consistent with a stratagenic-like signature
 
 * GWAS evidence differs substantially across communities;
 * a restricted collection of communities contains disproportionately
@@ -432,7 +394,7 @@ prove the complete omnigenic model.
 For Alzheimer’s disease, this will be examined by comparing the
 APOE-excluded and APOE-included analyses.
 
-### Pattern consistent with a network-unstructured polygenic signature
+### Pattern consistent with a polygenic signature
 
 * GWAS evidence is broadly distributed;
 * degree is not reproducibly associated with GWAS signal;
@@ -443,45 +405,6 @@ These interpretations describe consistency with model predictions.
 They will not be used to claim definitive proof or refutation of an
 entire genetic-architecture model.
 
-## Planned sensitivity analyses
-
-| Decision                | Primary                                     | Sensitivity                                  |
-| ----------------------- | ------------------------------------------- | -------------------------------------------- |
-| Network                 | STRING physical, score ≥700                 | BioGRID physical                             |
-| Community detection     | MONET K1                                    | MONET M1                                     |
-| RWR restart probability | (r=0.5)                                     | (r=0.3,\ 0.7)                                |
-| MAGMA mapping window    | Gene body +35 kb upstream/+10 kb downstream | Gene body only                               |
-| GWAS representation     | Continuous MAGMA Z-score                    | Binary significant gene                      |
-| Locus-level mapping     | Not primary                                 | Independent lead SNPs mapped to nearest gene |
-| Connectivity measure    | Unweighted degree                           | Confidence-weighted degree                   |
-| Publication adjustment  | Included                                    | Excluded                                     |
-| Alzheimer phenotype     | No-proxy                                    | Main; no-biobank                             |
-| Alzheimer APOE handling | APOE excluded                               | APOE included                                |
-| Alzheimer seed genes    | APP, PSEN1, PSEN2                           | Expanded familial-AD set                     |
-| Height GWAS             | Yengo et al. 2022                           | GIANT 2018; UKBB-excluded                    |
-| Height seed genes       | Yengo abnormal-growth set                   | ClinGen Strong/Definitive set                |
-
-A sensitivity analysis will not be considered an automatic failure
-merely because its p-value crosses 0.05. Effect direction, magnitude,
-confidence interval, dataset coverage, and evidence of effect reversal
-will all be reported.
-
-## Multiple testing
-
-Within each trait:
-
-* one primary connectivity test will be identified;
-* one primary RWR proximity test will be identified;
-* community enrichment p-values will be corrected using
-  Benjamini–Hochberg false-discovery-rate correction.
-
-Height and Alzheimer’s disease will be interpreted as separate trait
-analyses.
-
-A formal claim that the traits differ will require a direct statistical
-test of the difference. Otherwise, cross-trait differences will be
-reported descriptively.
-
 ## Development and preregistration plan
 
 Height will be used to:
@@ -489,7 +412,7 @@ Height will be used to:
 * build the data-processing pipeline;
 * select workable software parameters;
 * identify data-quality problems;
-* test the implementation of MAGMA, MONET, and RWR;
+* test the implementation of MAGMA, Leiden, and RWR;
 * finalize the regression and permutation procedures.
 
 After the height pipeline is stable:
@@ -511,9 +434,6 @@ The following are not part of the initial project:
 * gene-regulatory networks;
 * rare-variant burden testing;
 * multi-ancestry comparisons;
-* polygenic-score analysis;
-* formal individual-level tests of stratagenic architecture;
-* simulation-based classification of genetic architectures.
 
 These may be considered after the primary PPI-based project is
 completed.
