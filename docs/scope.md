@@ -104,17 +104,8 @@ Sensitivity analysis:
 
 ## Variant set
 
-The primary analyses will use common variants:
-
-[
-\mathrm{MAF} \geq 1%
-]
-
-When effect-allele frequency is available:
-
-[
-\mathrm{MAF}=\min(\mathrm{EAF},1-\mathrm{EAF})
-]
+The primary analyses will use common variants.
+Or if absent, derived from effect-allele frequency if available.
 
 When frequency is unavailable in the GWAS file, frequency from the
 matched LD reference panel will be used and documented as
