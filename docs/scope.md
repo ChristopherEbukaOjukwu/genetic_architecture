@@ -61,7 +61,7 @@ Height will be analyzed using:
 
 * GRCh37 gene annotations (the SNP positions in the height
   file use the GRCh37 version of the human genome);
-* a matching GRCh37 LD reference panel;
+* a matching GRCh37 LD reference panel (1000 Genomes Phase 3 EUR, GRCh37);
 * stable gene identifiers for later harmonization with the Alzheimer's
   results.
 
@@ -77,6 +77,7 @@ Primary dataset:
 * no-proxy meta-analysis (does not count for Alzheimer's cases reported in relatives);
 * European-ancestry samples;
 * GRCh38 coordinates.
+* European-ancestry LD reference matched to GRCh38
 
 ## APOE handling
 
@@ -94,7 +95,6 @@ Sensitivity analysis:
 ## Variant set
 
 The primary analyses will use common variants.
-Or if absent, derived from effect-allele frequency if available.
 
 When frequency is unavailable in the GWAS file, frequency from the
 matched LD reference panel will be used and documented as
