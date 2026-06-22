@@ -65,17 +65,6 @@ Height will be analyzed using:
 * stable gene identifiers for later harmonization with the Alzheimer's
   results.
 
-Sensitivity datasets:
-
-* GIANT 2018 height meta-analysis
-
-  * tests sensitivity to GWAS vintage and sample size
-  * Basically, checks whether the network result is also found in an older and smaller GWAS;
-* Yengo et al. 2022 UK Biobank-excluded analysis
-
-  * tests whether UK Biobank-specific sample structure drives the result
-  * Basically asks whether the network remains when UK Biobank is removed.
-
 ### Alzheimer’s disease and related dementias
 
 Bellenguez et al. 2026, Nature Genetics 58, 1214–1225.
