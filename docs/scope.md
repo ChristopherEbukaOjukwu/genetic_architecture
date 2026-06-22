@@ -121,14 +121,6 @@ MAGMA gene-level analysis using:
 MAGMA will combine association evidence across variants assigned to
 each gene while accounting for LD.
 
-### MAGMA mapping sensitivity
-
-Repeat MAGMA using:
-
-* gene body only.
-
-This tests whether the main findings depend on the selected gene window.
-
 ## GWAS outcome variables
 
 ### Primary outcome
