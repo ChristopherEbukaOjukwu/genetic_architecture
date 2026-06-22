@@ -153,11 +153,7 @@ exists, not as biological interaction strength.
 
 ### Primary connectivity measure
 
-Unweighted node degree:
-
-[
-k_g = \text{number of direct network connections of gene }g
-]
+Unweighted node degree: number of direct network connections of a gene.
 
 This is the most interpretable connectivity measure.
 
