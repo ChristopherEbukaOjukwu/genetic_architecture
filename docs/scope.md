@@ -102,8 +102,8 @@ reference-panel MAF.
 
 Primary analyses will initially be restricted to:
 
-* autosomal variants;
-* biallelic SNPs;
+* autosomal variants (chromosomes 1 - 22);
+* biallelic SNPs, because multi-allelic variants can be harder to harmonize;
 * variants with valid positions and p-values;
 * variants present in the matched LD reference panel.
 
