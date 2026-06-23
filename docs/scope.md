@@ -279,8 +279,6 @@ The three primary analyses will be interpreted jointly.
 * a small number of loci, genes, or communities dominate the results;
 * the overall signal is strongly shaped by a limited number of regions rather than broadly distributed evidence.
 
-For schizophrenia, this will be evaluated descriptively by checking whether results are dominated by a small number of known regions, including the MHC region. Any MHC-excluded analysis will be labeled exploratory unless prespecified before the confirmatory run.
-
 ### Pattern consistent with a polygenic signature
 
 * GWAS evidence is broadly distributed;
