@@ -70,14 +70,6 @@ Schizophrenia will be analyzed using:
 
 If the downloaded schizophrenia summary statistics are not already in GRCh37, they will be lifted to GRCh37 before SNP filtering, LD matching, and gene-level analysis. Variant counts will be recorded before and after build harmonization.
 
-## Locus handling
-
-No primary locus will be excluded from the schizophrenia analysis.
-
-Unlike Alzheimer’s disease, schizophrenia does not have a single APOE-like common-variant locus that must be removed in the primary analysis. However, the MHC region on chromosome 6 will be monitored descriptively because it is a known strong and complex schizophrenia-associated region.
-
-If the MHC region dominates the results, an MHC-excluded analysis may be reported as exploratory rather than as part of the confirmatory primary plan.
-
 ## Variant set
 
 The primary analyses will use common variants.
