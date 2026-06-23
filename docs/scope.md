@@ -10,7 +10,7 @@ The project will examine three network properties:
 2. Community-level concentration of GWAS evidence
 3. Proximity of GWAS evidence to independently defined Mendelian or rare large-effect genes
 
-The analyses will identify patterns consistent with particular genetic architectures: omnigenic, stratagenic, infinitesimal, oligogenic, or related models.
+The analyses will identify patterns consistent with particular genetic architectures: omnigenic, stratogenic, infinitesimal, oligogenic, or related models.
 
 ## Traits
 
