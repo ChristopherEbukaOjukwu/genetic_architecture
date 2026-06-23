@@ -179,9 +179,8 @@ This set includes genes involved in Mendelian disorders characterized by abnorma
 Primary seed set:
 
 * rare large-effect schizophrenia genes identified independently of common-variant GWAS;
-* primary source: SCHEMA rare coding-variant results;
+* primary source: SCHEMA (Schizophrenia Exome Sequencing Meta-Analysis consortium) rare coding-variant results;
 * the initial seed set will use genes meeting the predefined strongest evidence threshold from SCHEMA;
-* an expanded seed set may use SCHEMA genes meeting FDR < 5%, if prespecified before the schizophrenia analysis.
 
 These seed genes represent rare coding-variant evidence for schizophrenia risk and are independent of the common-variant GWAS summary statistics used for MAGMA.
 
