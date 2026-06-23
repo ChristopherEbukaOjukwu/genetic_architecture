@@ -120,7 +120,7 @@ STRING human physical protein–protein interaction network:
 * undirected;
 * protein-coding genes only;
 * self-loops removed;
-* duplicated gene–gene edges collapsed.
+* duplicated gene-gene edges collapsed.
 
 STRING scores will be interpreted as confidence that an interaction exists, not as biological interaction strength.
 
