@@ -16,19 +16,15 @@ The analyses will identify patterns consistent with particular genetic architect
 
 ### Primary and development trait
 
-Height, representing a canonical highly polygenic quantitative trait.
+```Height```
+Height represents a canonical highly polygenic quantitative trait.
 
 Height will be used to construct, debug, and evaluate the analysis pipeline.
 
 ### Confirmatory trait
 
-Schizophrenia, representing a highly polygenic neuropsychiatric disorder with:
-
-* substantial common-variant GWAS signal;
-* rare larger-effect coding variants identified independently of common-variant GWAS;
-* broader evidence of convergence on neuronal and synaptic biology;
-* no single APOE-like locus expected to dominate the analysis.
-
+```Schizophrenia```
+Schizophrenia represents a highly polygenic neuropsychiatric disorder.
 The schizophrenia analysis will be run after the primary analytical decisions have been finalized using height.
 
 ## GWAS datasets
