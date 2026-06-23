@@ -2,7 +2,7 @@
 
 ## Research question
 
-Do common-variant GWAS associations occupy non-random positions in protein–protein interaction networks, and are the observed patterns consistent with proposed network signatures of complex-trait genetic architecture?
+Do common-variant GWAS associations occupy non-random positions in protein-protein interaction networks, and are the observed patterns consistent with proposed network signatures of complex-trait genetic architecture?
 
 The project will examine three network properties:
 
