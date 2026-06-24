@@ -58,7 +58,7 @@ PGC 2022 schizophrenia GWAS from Trubetskoy et al.
 Primary summary-statistics source:
 
 * PGC `scz2022` summary statistics;
-* preferably European-ancestry or European-compatible summary statistics where available;
+* preferably European-ancestry or European-compatible summary statistics where available: `PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv.gz`;
 * genome build will be confirmed from the downloaded file README before analysis;
 * all downstream analyses will be harmonized to GRCh37.
 
