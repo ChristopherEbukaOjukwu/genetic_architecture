@@ -33,21 +33,41 @@ The schizophrenia analysis will be run after the primary analytical decisions ha
 
 Primary dataset:
 
-Yengo et al. 2022, Nature, GIANT height GWAS.
+Neale Lab UK Biobank Round 2 standing-height GWAS.
 
 Primary summary-statistics file:
 
-* `GIANT_HEIGHT_YENGO_2022_GWAS_SUMMARY_STATS_EUR.gz`
-* Predominantly European-ancestry analysis
-* GRCh37/hg19 coordinates
-* Public summary statistics exclude 23andMe data due to restrictions
-* Available per-variant sample sizes will be summarized from the `N` column because not every SNP was tested in the same number of people
+* Phenotype: `50_irnt`, UK Biobank standing height, inverse-rank-normal transformed.
+* GWAS file: `50_irnt.gwas.imputed_v3.both_sexes.tsv.bgz`
+* Download:
+
+```bash
+wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/50_irnt.gwas.imputed_v3.both_sexes.tsv.bgz -O 50_irnt.gwas.imputed_v3.both_sexes.tsv.bgz
+```
+
+Variant metadata file:
+
+* Metadata file: `variants.tsv.bgz`
+* Download:
+
+```bash
+wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/annotations/variants.tsv.bgz -O variants.tsv.bgz
+```
+File checks from local download:
+
+* GWAS file: `13,791,468` lines, corresponding to `13,791,468` variant records.
+* The GWAS file and variant metadata file can be joined by the `variant` column.
 
 Height will be analyzed using:
 
+* GRCh37/hg19 coordinates;
 * GRCh37 gene annotations;
-* a matching GRCh37 LD reference panel: 1000 Genomes Phase 3 EUR, GRCh37;
-* stable gene identifiers for later harmonization with the schizophrenia results.
+* a matching GRCh37 LD reference panel, likely 1000 Genomes Phase 3 EUR;
+* autosomal biallelic SNPs only;
+* valid p-values and genomic positions;
+* common-variant filtering using reference-panel MAF from the matched 1000 Genomes Phase 3 EUR LD reference panel;
+* removal of low-confidence variants using `low_confidence_variant`;
+* stable gene identifiers for harmonization with the schizophrenia analysis.
 
 ### Schizophrenia
 
@@ -57,31 +77,50 @@ PGC 2022 schizophrenia GWAS from Trubetskoy et al.
 
 Primary summary-statistics source:
 
-* PGC `scz2022` summary statistics;
-* preferably European-ancestry or European-compatible summary statistics where available: `PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv.gz`;
-* genome build will be confirmed from the downloaded file README before analysis;
-* all downstream analyses will be harmonized to GRCh37.
+* PGC `scz2022` summary statistics.
+* Source page: `https://figshare.com/articles/dataset/scz2022/19426775`
+* DOI: `https://doi.org/10.6084/m9.figshare.19426775`
+* Primary file: `PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv.gz`
+* Observed 7,659,841 total lines
+* Observed 7,659,768 variant rows
+* This is the European-ancestry autosomal public summary-statistics file from the PGC3 schizophrenia release.
 
 Schizophrenia will be analyzed using:
 
+* GRCh37/hg19 coordinates;
 * GRCh37 gene annotations;
-* a matching GRCh37 LD reference panel: 1000 Genomes Phase 3 EUR, GRCh37;
-* the same MAGMA SNP-to-gene mapping framework used for height.
-
-If the downloaded schizophrenia summary statistics are not already in GRCh37, they will be lifted to GRCh37 before SNP filtering, LD matching, and gene-level analysis. Variant counts will be recorded before and after build harmonization.
+* a matching GRCh37 LD reference panel, likely 1000 Genomes Phase 3 EUR;
+* autosomal variants from the European-ancestry summary-statistics file;
+* biallelic SNPs only after harmonization;
+* valid p-values and genomic positions;
+* available allele-frequency fields from the GWAS file, or reference-panel MAF when GWAS frequency is unavailable;
+* available sample-size fields, especially `NCAS`, `NCON`, and `NEFF`;
+* stable gene identifiers for harmonization with the height analysis.
+* generally, the same MAGMA SNP-to-gene mapping framework used for height.
 
 ## Variant set
 
-The primary analyses will use common variants.
+The primary analyses will use common autosomal variants.
 
-When frequency is unavailable in the GWAS file, frequency from the matched LD reference panel will be used and documented as reference-panel MAF.
+For both height and schizophrenia, common-variant filtering will use minor allele frequency from the 
+matched European LD reference panel rather than trait-specific GWAS allele-frequency fields. Reference-panel 
+allele frequencies will be computed from the 1000 Genomes Phase 3 EUR reference panel using PLINK and 
+documented as reference-panel MAF.
+
+This gives one harmonized frequency rule across both traits and avoids deriving separate MAF definitions 
+from phenotype-specific summary statistics.
 
 Primary analyses will initially be restricted to:
 
 * autosomal variants;
-* biallelic SNPs, because multi-allelic variants can be harder to harmonize;
-* variants with valid positions and p-values;
-* variants present in the matched LD reference panel.
+* biallelic SNPs, because multi-allelic variants and indels can be harder to harmonize;
+* variants with valid GRCh37/hg19 positions;
+* variants with valid p-values;
+* variants passing dataset-specific quality filters, including `low_confidence_variant == false` for height and acceptable `IMPINFO` for schizophrenia;
+* variants with reference-panel MAF `>= 0.01`;
+* variants present in the matched GRCh37 European LD reference panel.
+
+Reference-panel MAF will be generated from the matched 1000 Genomes Phase 3 EUR reference panel using PLINK.
 
 ## SNP-to-gene mapping
 
