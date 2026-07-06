@@ -93,7 +93,7 @@ Schizophrenia will be analyzed using:
 * autosomal variants from the European-ancestry summary-statistics file;
 * biallelic SNPs only after harmonization;
 * valid p-values and genomic positions;
-* available allele-frequency fields from the GWAS file, or reference-panel MAF when GWAS frequency is unavailable;
+* common-variant filtering using reference-panel MAF >= 0.01 from the matched 1000 Genomes Phase 3 EUR reference panel;
 * available sample-size fields, especially `NCAS`, `NCON`, and `NEFF`;
 * stable gene identifiers for harmonization with the height analysis.
 * generally, the same MAGMA SNP-to-gene mapping framework used for height.
@@ -249,7 +249,23 @@ Question:
 
 The primary coefficient is the association between node degree and MAGMA Z-score.
 
-### 2. Community enrichment analysis
+### 2. Community-specific connectivity analysis
+
+Question: 
+
+> Does the association between node degree and MAGMA Z-score differ across network communities?
+
+The primary analysis tests whether highly connected genes show stronger GWAS evidence in all communities, or whether the relationship between node degree and MAGMA Z-score is concentrated in particular communities.
+
+Community membership will be tested as a modifier of the association between node degree and MAGMA Z-score using a degree-by-community interaction.
+
+Conceptually, this asks whether being a highly connected gene is informative by itself, or whether connectivity is associated with stronger GWAS evidence only within particular network communities.
+
+For example, node degree may be strongly associated with MAGMA Z-score within a trait-relevant community but show little or no association within other communities.
+
+Community-specific degree–MAGMA Z-score associations will be summarized, and false-discovery-rate correction will be applied across community-level interaction or slope tests within each trait.
+
+### 3. Community enrichment analysis
 
 Questions:
 
@@ -263,7 +279,7 @@ Community membership will be tested as a predictor of MAGMA Z-score while adjust
 
 False-discovery-rate correction will be applied across community-level tests within each trait.
 
-### 3. Rare-seed proximity analysis
+### 4. Rare-seed proximity analysis
 
 Question:
 
@@ -298,34 +314,78 @@ Models will be reported both with and without publication-count adjustment.
 
 ## Architectural interpretation
 
-The three primary analyses will be interpreted jointly.
+The four primary analyses will be interpreted jointly.
 
-### Pattern consistent with an omnigenic-like signature
+The analyses are not intended to assign a trait to a mutually exclusive genetic-architecture category or to define a numerical threshold at which a trait is classified as omnigenic, stratagenic, infinitesimal, or oligogenic.
 
-* GWAS evidence is broadly distributed;
-* higher RWR proximity to rare large-effect seed genes predicts stronger GWAS evidence;
-* the pattern is not confined to only one or two communities;
-* the result is directionally consistent across STRING and BioGRID.
+Instead, the observed combination of network signatures will be compared with qualitative predictions from proposed models of complex-trait genetic architecture.
 
-### Pattern consistent with a stratogenic-like signature
+Architecture interpretation will therefore be comparative and signature-based rather than a binary classification exercise.
 
-* GWAS evidence differs substantially across communities;
-* a restricted collection of communities contains disproportionately strong association evidence;
-* enriched communities represent distinct biological processes.
+The terms `broadly distributed`, `substantial`, `restricted`, and `concentrated` used below are evaluated against the pre-specified effect-size and significance floors, and the community-concentration metric, defined in [§ decision rules / Primary analyses]. These rules are frozen on the height development trait and applied unchanged to schizophrenia.
 
-### Pattern consistent with an oligogenic-like signature
+### Evidence more consistent with an omnigenic-like organization
 
-* a small number of loci, genes, or communities dominate the results;
-* the overall signal is strongly shaped by a limited number of regions rather than broadly distributed evidence.
+A broadly distributed common-variant GWAS would strengthen an omnigenic-like interpretation signal together with evidence of convergence toward independently defined trait-relevant seed genes.
 
-### Pattern consistent with a polygenic signature
+Relevant network signatures include:
 
-* GWAS evidence is broadly distributed;
-* degree is not reproducibly associated with GWAS signal;
-* community enrichment is weak;
-* rare-seed proximity does not predict GWAS evidence.
+* GWAS evidence distributed across many genes and multiple communities;
+* stronger GWAS evidence among genes with greater network proximity to rare large-effect or otherwise independently defined seed genes;
+* network proximity that is not explained solely by a small number of communities;
+* evidence that connectivity is informative within multiple parts of the network rather than being restricted to one isolated module;
+* directionally consistent results across STRING and BioGRID sensitivity analyses.
 
-These interpretations describe consistency with model predictions. They will not be used to claim definitive proof or refutation of an entire genetic-architecture model.
+These patterns would be interpreted as more consistent with widespread peripheral genetic effects that remain connected to a smaller set of trait-relevant biological genes.
+
+### Evidence more consistent with a stratagenic-like organization
+
+A stratagenic-like interpretation would be strengthened by evidence that GWAS associations are unevenly organized across network communities and that connectivity is informative primarily within particular network contexts.
+
+Relevant network signatures include:
+
+* substantial variation in MAGMA Z-score across communities;
+* a restricted collection of communities carrying disproportionately strong GWAS evidence;
+* significant variation in the degree-MAGMA Z-score relationship across communities;
+* stronger degree-GWAS associations within particular communities and weak or absent relationships elsewhere;
+* trait-associated communities representing distinguishable biological processes.
+
+These patterns would be interpreted as more consistent with genetic evidence being stratified across functionally relevant network layers or modules.
+
+### Evidence more consistent with an oligogenic-like organization
+
+An oligogenic-like interpretation would be strengthened by a strong concentration of the observed signal in a limited number of genes, loci, or network regions.
+
+Relevant network signatures include:
+
+* a small number of genes or loci accounting for a disproportionate share of strong GWAS evidence;
+* network results strongly influenced by a limited number of genes or communities;
+* substantial attenuation of connectivity, community, or proximity results after removing the strongest signals;
+* limited evidence of broadly distributed network organization.
+
+These patterns would be interpreted as more consistent with an architecture dominated by a relatively small set of influential genetic signals.
+
+### Evidence more consistent with a infinitesimal-like organization
+
+An infinitesimal-like interpretation would be strengthened by broadly distributed GWAS evidence with little reproducible higher-order network structure.
+
+Relevant network signatures include:
+
+* broadly distributed gene-level GWAS evidence;
+* little or no reproducible association between node degree and MAGMA Z-score;
+* little evidence that the degree-GWAS relationship varies meaningfully across communities;
+* weak community-level differences in GWAS evidence;
+* little or no association between GWAS evidence and network proximity to independently defined seed genes.
+
+These patterns would be interpreted as more consistent with highly diffuse genetic effects that are not strongly organized according to the tested PPI network features.
+
+## Interpretive principle
+
+No individual analysis will be treated as sufficient evidence for a specific genetic-architecture model.
+
+Interpretation will be based on the joint direction, magnitude, robustness, and consistency of results across connectivity, community-specific connectivity, community enrichment, and rare-seed proximity analyses.
+
+The final conclusions will use language such as more consistent with, less consistent with, or shows network signatures predicted by a proposed architecture. The analyses will not claim to prove that a trait follows a specific architecture.
 
 ## Development and preregistration plan
 
