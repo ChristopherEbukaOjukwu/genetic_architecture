@@ -316,17 +316,15 @@ Models will be reported both with and without publication-count adjustment.
 
 The four primary analyses will be interpreted jointly.
 
-The analyses are not intended to assign a trait to a mutually exclusive genetic-architecture category or to define a numerical threshold at which a trait is classified as omnigenic, stratagenic, infinitesimal, or oligogenic.
+The analyses are not intended to assign a trait to a mutually exclusive genetic-architecture category or to define a numerical threshold at which a trait is classified as omnigenic, stratagenic, oligogenic, polygenic, or infinitesimal.
 
 Instead, the observed combination of network signatures will be compared with qualitative predictions from proposed models of complex-trait genetic architecture.
 
 Architecture interpretation will therefore be comparative and signature-based rather than a binary classification exercise.
 
-The terms `broadly distributed`, `substantial`, `restricted`, and `concentrated` used below are evaluated against the pre-specified effect-size and significance floors, and the community-concentration metric, defined in [§ decision rules / Primary analyses]. These rules are frozen on the height development trait and applied unchanged to schizophrenia.
-
 ### Evidence more consistent with an omnigenic-like organization
 
-A broadly distributed common-variant GWAS would strengthen an omnigenic-like interpretation signal together with evidence of convergence toward independently defined trait-relevant seed genes.
+A broadly distributed common-variant GWAS signal, together with evidence of convergence toward independently defined trait-relevant seed genes, would strengthen an omnigenic-like interpretation.
 
 Relevant network signatures include:
 
@@ -334,7 +332,6 @@ Relevant network signatures include:
 * stronger GWAS evidence among genes with greater network proximity to rare large-effect or otherwise independently defined seed genes;
 * network proximity that is not explained solely by a small number of communities;
 * evidence that connectivity is informative within multiple parts of the network rather than being restricted to one isolated module;
-* directionally consistent results across STRING and BioGRID sensitivity analyses.
 
 These patterns would be interpreted as more consistent with widespread peripheral genetic effects that remain connected to a smaller set of trait-relevant biological genes.
 
@@ -346,11 +343,23 @@ Relevant network signatures include:
 
 * substantial variation in MAGMA Z-score across communities;
 * a restricted collection of communities carrying disproportionately strong GWAS evidence;
-* significant variation in the degree-MAGMA Z-score relationship across communities;
+* substantial variation in the degree-MAGMA Z-score relationship across communities;
 * stronger degree-GWAS associations within particular communities and weak or absent relationships elsewhere;
 * trait-associated communities representing distinguishable biological processes.
 
 These patterns would be interpreted as more consistent with genetic evidence being stratified across functionally relevant network layers or modules.
+
+### Evidence more consistent with a polygenic-like organization
+A polygenic-like interpretation would be strengthened by evidence that GWAS association is distributed across many genes rather than dominated by a small number of genes, loci, or network regions.
+
+Relevant network signatures include:
+
+* GWAS evidence distributed across many genes;
+* no small set of genes or communities dominating the overall pattern;
+* broad persistence of GWAS evidence after removing the strongest individual loci or genes;
+* network degree, community membership, or seed proximity may explain some variation in GWAS evidence, but no single network feature is required * to account for the broad distribution of association signal.
+
+These patterns would be interpreted as more consistent with many genetic contributors influencing the trait.
 
 ### Evidence more consistent with an oligogenic-like organization
 
@@ -365,9 +374,9 @@ Relevant network signatures include:
 
 These patterns would be interpreted as more consistent with an architecture dominated by a relatively small set of influential genetic signals.
 
-### Evidence more consistent with a infinitesimal-like organization
+### Evidence more consistent with an infinitesimal-like organization
 
-An infinitesimal-like interpretation would be strengthened by broadly distributed GWAS evidence with little reproducible higher-order network structure.
+An infinitesimal-like interpretation would be strengthened by broadly distributed GWAS evidence with little reproducible organization of GWAS evidence across network communities or proximity patterns.
 
 Relevant network signatures include:
 
@@ -383,7 +392,7 @@ These patterns would be interpreted as more consistent with highly diffuse genet
 
 No individual analysis will be treated as sufficient evidence for a specific genetic-architecture model.
 
-Interpretation will be based on the joint direction, magnitude, robustness, and consistency of results across connectivity, community-specific connectivity, community enrichment, and rare-seed proximity analyses.
+Interpretation will be based on the joint direction, magnitude, robustness, and consistency of results across connectivity, community-specific connectivity, community enrichment, and rare-seed proximity analyses. And directionally consistent results across STRING and BioGRID sensitivity analyses.
 
 The final conclusions will use language such as more consistent with, less consistent with, or shows network signatures predicted by a proposed architecture. The analyses will not claim to prove that a trait follows a specific architecture.
 
