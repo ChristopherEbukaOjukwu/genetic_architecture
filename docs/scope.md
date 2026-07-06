@@ -122,6 +122,234 @@ Primary analyses will initially be restricted to:
 
 Reference-panel MAF will be generated from the matched 1000 Genomes Phase 3 EUR reference panel using PLINK.
 
+## Extra datasets
+
+### 1000 Genomes Phase 3 EUR reference panel, GRCh37
+
+The 1000 Genomes Phase 3 European reference panel will be used for:
+
+* LD modeling in MAGMA;
+* reference-panel MAF calculation;
+* harmonization of GWAS variants to the LD reference.
+
+The MAGMA-provided reference data use 1000 Genomes Phase 3 variants and GRCh37/Build 37 coordinates.
+
+Download:
+
+```text
+MAGMA source page:
+https://cncr.nl/research/magma/
+
+European reference panel:
+https://vu.data.surf.nl/s/VZNByNwpD8qqINe?opendetails=
+```
+
+Primary reference files are the PLINK-format files contained in the downloaded archive.
+
+Reference-panel MAF will be calculated using PLINK:
+
+```bash
+plink --bfile g1000_eur --freq --out g1000_eur
+```
+
+The resulting reference-panel MAF will be used to apply the primary common-variant threshold of `MAF >= 0.01` consistently to both height and schizophrenia.
+
+### MAGMA gene annotation file, GRCh37
+
+The MAGMA GRCh37 gene-location file will be used to map SNPs to genes.
+
+Download:
+
+```text
+MAGMA source page:
+https://cncr.nl/research/magma/
+
+Build 37 gene locations:
+https://vu.data.surf.nl/s/Pj2orwuF2JYyKxq?opendetails=
+```
+
+Primary file:
+
+```text
+NCBI37.3.gene.loc
+```
+
+The file contains gene coordinates and Entrez Gene IDs.
+
+The gene body coordinates in this file will be extended by the prespecified MAGMA SNP-to-gene annotation window of 35 kb upstream and 10 kb downstream.
+
+### STRING human physical PPI network
+
+The primary protein-protein interaction network will use the STRING v12.0 human physical subnetwork.
+
+Download:
+
+```bash
+wget https://stringdb-downloads.org/download/protein.physical.links.v12.0/9606.protein.physical.links.v12.0.txt.gz \
+  -O 9606.protein.physical.links.v12.0.txt.gz
+```
+
+Primary network file:
+
+```text
+9606.protein.physical.links.v12.0.txt.gz
+```
+
+Also download the human protein information file:
+
+```bash
+wget https://stringdb-downloads.org/download/protein.info.v12.0/9606.protein.info.v12.0.txt.gz \
+  -O 9606.protein.info.v12.0.txt.gz
+```
+
+Protein information file:
+
+```text
+9606.protein.info.v12.0.txt.gz
+```
+
+The primary network will be restricted to:
+
+* Homo sapiens;
+* physical protein-protein interactions;
+* `combined_score >= 700`;
+* protein-coding genes after protein-to-gene harmonization;
+* undirected edges;
+* self-loops removed;
+* duplicated gene-gene edges collapsed.
+
+STRING combined scores will be interpreted as confidence that an interaction exists, not as biological interaction strength.
+
+### Gene ID mapping
+
+STRING protein identifiers will be mapped directly to Entrez Gene IDs using the STRING v12.0 human protein alias file.
+
+Download:
+
+```bash
+wget https://stringdb-downloads.org/download/protein.aliases.v12.0/9606.protein.aliases.v12.0.txt.gz \
+  -O 9606.protein.aliases.v12.0.txt.gz
+```
+
+Primary mapping file:
+
+```text
+9606.protein.aliases.v12.0.txt.gz
+```
+
+The primary STRING-to-gene mapping will use aliases with:
+
+```text
+source == Ensembl_HGNC_entrez_id
+```
+
+This provides a direct mapping from STRING protein IDs to numeric Entrez Gene IDs.
+
+Entrez Gene ID will be used as the primary gene identifier for MAGMA-to-STRING harmonization.
+
+Gene symbols will be retained for reporting and interpretation.
+
+### Height seed genes
+
+The height seed set consists of all 462 autosomal genes implicated in extreme height phenotypes and skeletal growth disorders reported in Yengo et al. 2022 Supplementary Table 11.
+
+Source:
+
+```text
+Yengo et al. 2022
+Supplementary Table 11
+https://www.nature.com/articles/s41586-022-05275-y
+```
+
+Download:
+
+```bash
+wget "https://static-content.springer.com/esm/art%3A10.1038%2Fs41586-022-05275-y/MediaObjects/41586_2022_5275_MOESM3_ESM.xlsx" \
+  -O Yengo_2022_supplementary_tables.xlsx
+```
+
+The source seed set contains 462 autosomal genes.
+
+All 462 genes will be retained as the source seed set before identifier harmonization and intersection with the protein-coding STRING network.
+
+The following counts will be documented:
+
+```text
+462 source seed genes
+→ N successfully mapped to Entrez Gene IDs
+→ N represented in the STRING network
+```
+
+### Schizophrenia seed genes
+
+The primary schizophrenia seed set will use the 10 exome-wide significant genes identified by the SCHEMA Consortium in Singh et al. 2022.
+
+Source:
+
+```text
+Singh et al. 2022
+Rare coding variants in ten genes confer substantial risk for schizophrenia
+https://www.nature.com/articles/s41586-022-04556-w
+```
+
+The SCHEMA 2022 10-gene seed set is:
+
+```text
+SETD1A
+CUL1
+XPO7
+TRIO
+CACNA1G
+SP4
+GRIN2A
+HERC1
+RB1CC1
+GRIA3
+```
+
+These genes were identified at exome-wide significance through rare coding-variant burden analyses and provide an independently defined rare-variant schizophrenia reference set.
+
+The following counts will be documented:
+
+```text
+10 source seed genes
+→ N successfully mapped to Entrez Gene IDs
+→ N represented in the STRING network
+```
+
+### Publication count
+
+Publication attention will be measured using the NCBI `gene2pubmed` gene-to-PubMed mapping file.
+
+Download:
+
+```bash
+wget https://ftp.ncbi.nlm.nih.gov/gene/DATA/gene2pubmed.gz \
+  -O gene2pubmed.gz
+```
+
+The file will be restricted to human genes:
+
+```text
+tax_id == 9606
+```
+
+For each Entrez Gene ID:
+
+```text
+publication_count = number of unique associated PubMed IDs
+```
+
+The publication-attention covariate will be:
+
+```text
+log(publication_count + 1)
+```
+
+This measure will be interpreted as an NCBI gene-linked PubMed publication-count proxy for research attention, not as an exhaustive count of all publications that mention a gene.
+
+
+
 ## SNP-to-gene mapping
 
 ### Primary gene-level analysis
