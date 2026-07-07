@@ -93,11 +93,21 @@ Schizophrenia will be analyzed using:
 * autosomal variants from the European-ancestry summary-statistics file;
 * biallelic SNPs only after harmonization;
 * valid p-values and genomic positions;
-* removal of low-imputation-quality variants by retaining only variants with IMPINFO >= 0.8;
+* removal of low-imputation-quality variants by retaining only variants with IMPINFO > 0.8;
 * common-variant filtering using reference-panel MAF >= 0.01 from the matched 1000 Genomes Phase 3 EUR reference panel;
 * available sample-size fields, especially `NCAS`, `NCON`;
 * stable gene identifiers for harmonization with the height analysis.
 * generally, the same MAGMA SNP-to-gene mapping framework used for height.
+
+### Schizophrenia extended-MHC sensitivity analysis
+
+The primary schizophrenia analyses will retain eligible genes in the extended MHC region because the primary analysis is intended to characterize genome-wide common-variant GWAS organization.
+
+A schizophrenia-specific sensitivity analysis will repeat the three primary analyses after excluding genes whose GRCh37 gene-body coordinates overlap the extended MHC region on chromosome 6 from 25 Mb to 35 Mb.
+
+The cleaned PPI network and previously calculated network metrics will remain fixed. Extended-MHC genes will be excluded from the schizophrenia gene-level analysis universe for the sensitivity analysis rather than rebuilding the network.
+
+This sensitivity analysis will determine whether the direction and interpretation of the schizophrenia network results are primarily driven by the unusually strong and high-LD extended-MHC region.
 
 ## Variant set
 
@@ -117,7 +127,7 @@ Primary analyses will initially be restricted to:
 * biallelic SNPs, because multi-allelic variants and indels can be harder to harmonize;
 * variants with valid GRCh37/hg19 positions;
 * variants with valid p-values;
-* variants passing dataset-specific quality filters, including `low_confidence_variant == false` for height; and `IMPINFO >= 0.8` for schizophrenia;
+* variants passing dataset-specific quality filters, including `low_confidence_variant == false` for height; and `IMPINFO > 0.8` for schizophrenia;
 * variants with reference-panel MAF `>= 0.01`;
 * variants present in the matched GRCh37 European LD reference panel.
 
@@ -442,12 +452,11 @@ Leiden will divide the cleaned PPI network into densely and internally connected
 The primary Leiden analysis will use:
 
 * modularity as the objective function --- because the goal is to identify groups of genes that are more densely connected to each other than expected from the broader network structure;
-* resolution parameter `1.0` --- the standard modularity resolution; higher values produce more, smaller communities, whereas lower values produce fewer, larger communities;
 * an unweighted network --- because STRING `combined_score` is treated as confidence that an interaction exists rather than as biological interaction strength;
 * random seed `42` --- a fixed arbitrary integer used for reproducibility;
 * iterations continued until no further improvement in partition quality --- implemented using the Leiden algorithm's convergence option, which continues iterating until partition quality no longer improves.
 
-The resolution parameter and random seed are fixed independently of the GWAS association results and will not be tuned based on MAGMA Z-scores or community enrichment results.
+The Leiden objective function, network weighting rule, and random seed are fixed independently of the GWAS association results and will not be tuned based on MAGMA Z-scores or community results.
 
 ## Mendelian and rare large-effect seed genes
 
@@ -489,7 +498,15 @@ Primary restart probability:
 r=0.5
 ]
 
-Each gene will receive an RWR score. A higher score means the gene is more strongly connected to the seed genes through the network.
+Each gene will receive an RWR score. A higher raw RWR score indicates greater network proximity to the trait-specific seed genes.
+
+Raw RWR scores will be retained for descriptive reporting.
+
+For the primary gene-property regression analysis, RWR scores will be rank-based inverse-normal transformed across the non-seed genes in the trait- and network-specific analysis universe. Higher transformed values will continue to represent greater seed proximity.
+
+The rank-based inverse-normal transformation is prespecified to reduce the influence of the highly concentrated upper tail of the RWR score distribution and to avoid interpreting absolute differences in raw RWR probability as linearly equivalent biological differences in proximity.
+
+The same transformation procedure will be applied to RWR scores generated from the observed seed set and from each matched random seed set before regression analysis.
 
 ## Primary analyses
 
@@ -510,38 +527,31 @@ Questions:
 
 > Does the association between node degree and MAGMA Z-score differ across network communities?
 
-The primary model will be:
+Two related community analyses will be performed within the MAGMA generalized gene-property framework.
 
-`MAGMA Z ~ degree + community + degree × community + gene length + number of SNPs + publication count`
+First, each Leiden community will be represented as a gene set and tested for differences in MAGMA gene-level association evidence relative to genes outside that community. This tests whether membership in particular network communities is associated with stronger or weaker GWAS evidence.
 
-Node degree will be centered before fitting the model so that community-level differences can be interpreted at the average degree of genes in the network.
+Second, interactions between Leiden community membership and node degree will be tested. These analyses ask whether the association between node degree and MAGMA Z-score differs for genes inside a particular community compared with genes outside that community.
 
-Two primary inferential tests will be performed.
+False-discovery-rate correction will be applied across community-membership tests and separately across degree-by-community interaction tests within each trait.
 
-First, an omnibus community test will ask whether MAGMA Z-score differs across network communities after adjusting for gene-level characteristics. This tests whether community membership itself is associated with GWAS evidence.
+Community-level MAGMA Z-score patterns and community-specific degree–MAGMA Z-score relationships will be reported to show where and in what direction the observed differences occur.
 
-Second, an omnibus degree-by-community interaction test will ask whether the association between node degree and MAGMA Z-score differs across communities. This tests whether highly connected genes show stronger GWAS evidence throughout the network or primarily within particular communities.
+Together, these analyses distinguish between a community in which genes generally show elevated GWAS evidence and a community in which highly connected genes additionally tend to show stronger GWAS evidence.
 
-Community-level MAGMA Z-score patterns and community-specific degree–MAGMA Z-score slopes will be reported as follow-up summaries.
-
-Together, these analyses distinguish between a community in which genes generally show elevated GWAS evidence and a community in which, beyond the community-level pattern, highly connected genes also tend to show stronger GWAS evidence.
-
-False-discovery-rate correction will be applied to prespecified community-level follow-up tests within each trait.
-
-
-### 4. Rare-seed proximity analysis
+### 3. Rare-seed proximity analysis
 
 Question:
 
 > Do genes with stronger common-variant GWAS evidence lie closer in the network to independently defined trait-specific seed genes?
 
-A positive RWR coefficient means that genes more strongly connected to the seed genes tend to have stronger common-variant GWAS evidence.
+A positive transformed RWR coefficient means that genes more strongly connected to the seed genes tend to have stronger common-variant GWAS evidence.
 
 The observed seed result will be compared with random seed sets matched on number of genes, node degree, publication count, and network component.
 
 The real network will remain fixed during these permutations. Only the observed and random seed labels change.
 
-This is to test whether common-variant GWAS evidence is closer to independently defined rare large-effect schizophrenia genes than expected for genes with similar connectedness, publication attention, and network location.
+This is to test whether common-variant GWAS evidence is closer to independently defined trait-specific seed genes than expected for genes with similar connectedness, publication attention, and network location.
 
 ## Research-attention adjustment
 
@@ -549,22 +559,90 @@ An argument is that the scientific literature partly shapes protein-interaction 
 
 This extends the argument to say that a gene may appear highly connected or close to rare large-effect seed genes partly because it is well studied, not necessarily because it is biologically more central to the trait.
 
-To account for this, publication count will be included as a proxy for research attention. Publication count will be calculated as the number of unique PubMed records linked to each gene, using NCBI `gene2pubmed` or an equivalent gene-publication mapping source.
+To account for this, publication count will be included as a proxy for research attention. Publication count will be calculated as the number of unique PubMed records linked to each gene, using NCBI `gene2pubmed`.
 
-## Model covariates
 
-Gene length, number of SNPs included in the MAGMA gene test, and publication count will be considered gene-level covariates in the primary regression models.
+## Model specification
 
-Publication-count-adjusted and unadjusted models will both be reported.
+Primary gene-level regression analyses will be performed using the MAGMA generalized gene-property analysis framework.
 
-Community membership will be included only in analyses where community is part of the prespecified research question or model structure, including the community-specific connectivity and community enrichment analyses.
+MAGMA's gene–gene correlation structure and automatic technical covariates will be retained in all primary models. These automatic technical adjustments include gene size measured by the number of analyzed SNPs, gene density representing within-gene LD, inverse mean minor allele count, and per-gene sample size when sample size varies across genes.
 
-The exact covariate specification for each primary model will be finalized during height-pipeline development and fixed before preregistration of the schizophrenia analysis.
+Physical gene length will additionally be included as a prespecified gene-level covariate. Gene length will be calculated from the unextended gene-body coordinates in the GRCh37 `NCBI37.3.gene.loc` file and will not include the 35 kb upstream and 10 kb downstream SNP-mapping window. Physical gene length is retained in addition to MAGMA's SNP-count-based gene-size correction because the two capture different aspects of gene size. MAGMA's automatic gene-size covariate represents the number of analyzed SNPs assigned to a gene, whereas physical gene length represents the genomic span of the gene body in base pairs.
 
+Publication attention will be represented as:
+
+`log(publication_count + 1)`
+
+Each primary analysis will be reported using a base model and a publication-attention-adjusted model that additionally includes the publication-attention covariate.
+
+In the primary proximity models, `transformed RWR score` refers to the prespecified rank-based inverse-normal transformation of the raw RWR score.
+
+### Connectivity analysis
+
+Base model of interest:
+
+`MAGMA Z ~ degree + gene length`
+
+Publication-attention-adjusted model of interest:
+
+`MAGMA Z ~ degree + gene length + log(publication_count + 1)`
+
+The MAGMA automatic technical covariates will be retained in both models.
+
+Community membership will not be included because this analysis tests the overall association between node degree and GWAS evidence across the network.
+
+### Community organization and community-specific connectivity analysis
+
+Leiden communities will be represented as gene sets in MAGMA. Node degree, physical gene length, and publication attention will be supplied as continuous gene properties.
+
+Community organization will be evaluated by testing each Leiden community for differences in gene-level GWAS evidence relative to genes outside that community. For degree-by-community interaction analyses, only Leiden communities satisfying MAGMA's default gene-set-by-continuous-property interaction size criterion will be tested. The tested community must contain at least 100 genes in the trait- and network-specific analysis universe and no more than the total number of analyzed genes minus 100.
+
+Base model of interest:
+
+`MAGMA Z ~ community membership + gene length`
+
+Publication-attention-adjusted model of interest:
+
+`MAGMA Z ~ community membership + gene length + log(publication_count + 1)`
+
+Community-specific connectivity will be evaluated using MAGMA's native gene-set-by-continuous-gene-property interaction framework, with Leiden community membership represented as the gene set and node degree represented as the continuous gene property.
+
+Conceptual interaction model:
+
+`MAGMA Z ~ degree + community membership + degree × community membership + gene length`
+
+Publication-attention-adjusted conceptual interaction model:
+
+`MAGMA Z ~ degree + community membership + degree × community membership + gene length + log(publication_count + 1)`
+
+MAGMA internally centers the continuous gene property on its mean within the tested gene set when defining the interaction term. Degree-by-community interaction terms will therefore be generated using MAGMA's native interaction analysis rather than manually constructed interaction columns.
+
+Gene length and publication attention will be included as conditioning gene properties in the applicable models.
+
+The MAGMA automatic technical covariates will be retained in all models.
+
+False-discovery-rate correction will be applied separately across community-membership tests and degree-by-community interaction tests within each trait.
+
+### Rare-seed proximity analysis
+
+Base model of interest:
+
+`MAGMA Z ~ transformed RWR score + degree + gene length`
+
+Publication-attention-adjusted model of interest:
+
+`MAGMA Z ~ transformed RWR score + degree + gene length + log(publication_count + 1)`
+
+The MAGMA automatic technical covariates will be retained in both models.
+
+Node degree will be included to distinguish seed proximity from general network connectedness. Community membership will not be included in the primary proximity model because the primary question concerns overall convergence toward independently defined seed genes.
+
+The same primary model specifications will be used for height and schizophrenia and for the corresponding STRING and BioGRID analyses.
 
 ## Architectural interpretation
 
-The four primary analyses will be interpreted jointly.
+The three primary analyses will be interpreted jointly.
 
 The analyses are not intended to assign a trait to a mutually exclusive genetic-architecture category or to define a numerical threshold at which a trait is classified as omnigenic, stratagenic, oligogenic, polygenic, or infinitesimal.
 
@@ -643,7 +721,7 @@ Note: polygenic-like differs from infinitesimal-like in that some network featur
 
 No individual analysis will be treated as sufficient evidence for a specific genetic-architecture model.
 
-Interpretation will be based on the joint direction, magnitude, robustness, and consistency of results across connectivity, community-specific connectivity, community enrichment, and rare-seed proximity analyses, including the directional consistency of results across STRING and BioGRID sensitivity analyses.
+Interpretation will be based on the joint direction, magnitude, robustness, and consistency of results across connectivity, community organization and community-specific connectivity, and rare-seed proximity analyses, including the directional consistency of results across STRING and BioGRID sensitivity analyses.
 
 The final conclusions will use language such as more consistent with, less consistent with, or shows network signatures predicted by a proposed architecture. The analyses will not claim to prove that a trait follows a specific architecture.
 
@@ -655,7 +733,7 @@ Height will be used to:
 * select workable software parameters;
 * identify data-quality problems;
 * test the implementation of MAGMA, Leiden, and RWR;
-* finalize the regression and permutation procedures.
+* verify implementation of the prespecified regression models and finalize the matched-seed permutation procedure.
 
 After the height pipeline is stable:
 
@@ -674,6 +752,6 @@ The following are not part of the initial project:
 * gene-regulatory networks;
 * rare-variant burden testing;
 * multi-ancestry comparisons;
-* additional sensitivity analyses beyond the prespecified BioGRID robustness analysis.
+* additional sensitivity analyses beyond the prespecified BioGRID robustness and schizophrenia extended-MHC sensitivity analyses.
 
 These may be considered after the primary PPI-based project is completed.
