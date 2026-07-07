@@ -2,15 +2,15 @@
 
 ## Research question
 
-Do common-variant GWAS associations occupy non-random positions in protein-protein interaction networks, and are the observed patterns consistent with proposed network signatures of complex-trait genetic architecture?
+Do genes prioritized from common-variant GWAS occupy non-random positions in protein-protein interaction networks, and are the observed patterns consistent with proposed network signatures of complex-trait genetic architecture?
 
 The project will examine three network properties:
 
 1. Gene connectivity
-2. Community-level concentration of GWAS evidence
+2. Community organization and community-specific connectivity.
 3. Proximity of GWAS evidence to independently defined Mendelian or rare large-effect genes
 
-The analyses will identify patterns consistent with particular genetic architectures: omnigenic, stratogenic, infinitesimal, oligogenic, or related models.
+The analyses will identify patterns consistent with particular genetic architectures: omnigenic, stratagenic, infinitesimal, oligogenic, or related models.
 
 ## Traits
 
@@ -55,14 +55,14 @@ wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/annotations/va
 ```
 File checks from local download:
 
-* GWAS file: `13,791,468` lines, corresponding to `13,791,468` variant records.
+* GWAS file: `13,791,468` lines, corresponding to `13,791,467` variant records plus one header line.
 * The GWAS file and variant metadata file can be joined by the `variant` column.
 
 Height will be analyzed using:
 
 * GRCh37/hg19 coordinates;
 * GRCh37 gene annotations;
-* a matching GRCh37 LD reference panel, likely 1000 Genomes Phase 3 EUR;
+* the 1000 Genomes Phase 3 EUR GRCh37 reference panel for LD modeling and reference-panel MAF;
 * autosomal biallelic SNPs only;
 * valid p-values and genomic positions;
 * common-variant filtering using reference-panel MAF from the matched 1000 Genomes Phase 3 EUR LD reference panel;
@@ -81,8 +81,8 @@ Primary summary-statistics source:
 * Source page: `https://figshare.com/articles/dataset/scz2022/19426775`
 * DOI: `https://doi.org/10.6084/m9.figshare.19426775`
 * Primary file: `PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv.gz`
-* Observed 7,659,841 total lines
-* Observed 7,659,768 variant rows
+* Observed `7,659,841` total lines
+* Observed `7,659,768` non-metadata lines, consisting of `7,659,767` variant records plus one column-header line.
 * This is the European-ancestry autosomal public summary-statistics file from the PGC3 schizophrenia release.
 
 Schizophrenia will be analyzed using:
@@ -94,7 +94,7 @@ Schizophrenia will be analyzed using:
 * biallelic SNPs only after harmonization;
 * valid p-values and genomic positions;
 * common-variant filtering using reference-panel MAF >= 0.01 from the matched 1000 Genomes Phase 3 EUR reference panel;
-* available sample-size fields, especially `NCAS`, `NCON`, and `NEFF`;
+* available sample-size fields, especially `NCAS`, `NCON`;
 * stable gene identifiers for harmonization with the height analysis.
 * generally, the same MAGMA SNP-to-gene mapping framework used for height.
 
@@ -116,7 +116,7 @@ Primary analyses will initially be restricted to:
 * biallelic SNPs, because multi-allelic variants and indels can be harder to harmonize;
 * variants with valid GRCh37/hg19 positions;
 * variants with valid p-values;
-* variants passing dataset-specific quality filters, including `low_confidence_variant == false` for height and acceptable `IMPINFO` for schizophrenia;
+* variants passing dataset-specific quality filters, including `low_confidence_variant == false` for height; the schizophrenia `IMPINFO` threshold will be finalized during height-pipeline development and fixed before preregistration of the schizophrenia analysis;
 * variants with reference-panel MAF `>= 0.01`;
 * variants present in the matched GRCh37 European LD reference panel.
 
@@ -276,8 +276,8 @@ The following counts will be documented:
 
 ```text
 462 source seed genes
-→ N successfully mapped to Entrez Gene IDs
-→ N represented in the STRING network
+-> N successfully mapped to Entrez Gene IDs
+-> N represented in the STRING network
 ```
 
 ### Schizophrenia seed genes
@@ -313,8 +313,8 @@ The following counts will be documented:
 
 ```text
 10 source seed genes
-→ N successfully mapped to Entrez Gene IDs
-→ N represented in the STRING network
+-> N successfully mapped to Entrez Gene IDs
+-> N represented in the STRING network
 ```
 
 ### Publication count
@@ -362,6 +362,19 @@ MAGMA gene-level analysis will use:
 * an LD reference matched to the GWAS dataset.
 
 MAGMA will combine association evidence across variants assigned to each gene while accounting for LD.
+
+### MAGMA sample-size input
+
+For height, the per-variant `n_complete_samples` field will be used as the MAGMA sample-size column.
+
+For schizophrenia, per-variant total sample size will be calculated as:
+
+`N_SNP = NCAS + NCON`
+
+The derived `N_SNP` field will be used as the MAGMA sample-size column.
+
+MAGMA will therefore use per-SNP sample size for both traits rather than assuming a single constant sample size across all variants.
+
 
 ## GWAS outcome variables
 
@@ -412,7 +425,7 @@ For each trait and network, the analysis will include only genes that:
 * received a valid MAGMA gene-level association score; and
 * are present as nodes in the PPI network.
 
-Thus, the analysis universe is the intersection of the MAGMA gene set and the network gene set.
+Thus, the analysis universe is the intersection of the MAGMA gene set and the network gene set. More specifically, build and analyze the cleaned PPI network first. Calculate node degree, Leiden community membership, and RWR on the fixed PPI network. Then join the network results to MAGMA and restrict the regression analysis to genes with valid MAGMA scores.
 
 Genes absent from the network will be excluded rather than assigned a degree of zero.
 
@@ -485,13 +498,7 @@ Question:
 
 The primary analysis tests whether highly connected genes show stronger GWAS evidence in all communities, or whether the relationship between node degree and MAGMA Z-score is concentrated in particular communities.
 
-Community membership will be tested as a modifier of the association between node degree and MAGMA Z-score using a degree-by-community interaction.
-
-Conceptually, this asks whether being a highly connected gene is informative by itself, or whether connectivity is associated with stronger GWAS evidence only within particular network communities.
-
-For example, node degree may be strongly associated with MAGMA Z-score within a trait-relevant community but show little or no association within other communities.
-
-Community-specific degree–MAGMA Z-score associations will be summarized, and false-discovery-rate correction will be applied across community-level interaction or slope tests within each trait.
+The primary inferential test is an omnibus test of the degree-by-community interaction, asking whether the association between node degree and MAGMA Z-score varies across network communities. Community-specific degree-MAGMA Z-score slopes will be reported as descriptive follow-up analyses to show where and in what direction the relationship differs.
 
 ### 3. Community enrichment analysis
 
@@ -511,7 +518,7 @@ False-discovery-rate correction will be applied across community-level tests wit
 
 Question:
 
-> Do genes with stronger common-variant GWAS evidence lie closer in the network to independently defined rare large-effect schizophrenia genes?
+> Do genes with stronger common-variant GWAS evidence lie closer in the network to independently defined trait-specific seed genes?
 
 A positive RWR coefficient means that genes more strongly connected to the seed genes tend to have stronger common-variant GWAS evidence.
 
@@ -529,16 +536,16 @@ This extends the argument to say that a gene may appear highly connected or clos
 
 To account for this, publication count will be included as a proxy for research attention. Publication count will be calculated as the number of unique PubMed records linked to each gene, using NCBI `gene2pubmed` or an equivalent gene-publication mapping source.
 
-## Required covariates
+## Model covariates
 
-Connectivity and proximity models will account for:
+Gene length, number of SNPs included in the MAGMA gene test, and publication count will be considered gene-level covariates in the primary regression models.
 
-* gene length;
-* number of SNPs included in the MAGMA gene test;
-* publication count;
-* network community.
+Publication-count-adjusted and unadjusted models will both be reported.
 
-Models will be reported both with and without publication-count adjustment.
+Community membership will be included only in analyses where community is part of the prespecified research question or model structure, including the community-specific connectivity and community enrichment analyses.
+
+The exact covariate specification for each primary model will be finalized during height-pipeline development and fixed before preregistration of the schizophrenia analysis.
+
 
 ## Architectural interpretation
 
@@ -584,8 +591,7 @@ Relevant network signatures include:
 
 * GWAS evidence distributed across many genes;
 * no small set of genes or communities dominating the overall pattern;
-* broad persistence of GWAS evidence after removing the strongest individual loci or genes;
-* network degree, community membership, or seed proximity may explain some variation in GWAS evidence, but no single network feature is required * to account for the broad distribution of association signal.
+* network degree, community membership, or seed proximity may explain some variation in GWAS evidence, but no single network feature is required to account for the broad distribution of association signal.
 
 These patterns would be interpreted as more consistent with many genetic contributors influencing the trait.
 
@@ -597,7 +603,6 @@ Relevant network signatures include:
 
 * a small number of genes or loci accounting for a disproportionate share of strong GWAS evidence;
 * network results strongly influenced by a limited number of genes or communities;
-* substantial attenuation of connectivity, community, or proximity results after removing the strongest signals;
 * limited evidence of broadly distributed network organization.
 
 These patterns would be interpreted as more consistent with an architecture dominated by a relatively small set of influential genetic signals.
@@ -620,7 +625,7 @@ These patterns would be interpreted as more consistent with highly diffuse genet
 
 No individual analysis will be treated as sufficient evidence for a specific genetic-architecture model.
 
-Interpretation will be based on the joint direction, magnitude, robustness, and consistency of results across connectivity, community-specific connectivity, community enrichment, and rare-seed proximity analyses. And directionally consistent results across STRING and BioGRID sensitivity analyses.
+Interpretation will be based on the joint direction, magnitude, robustness, and consistency of results across connectivity, community-specific connectivity, community enrichment, and rare-seed proximity analyses, including the directional consistency of results across STRING and BioGRID sensitivity analyses.
 
 The final conclusions will use language such as more consistent with, less consistent with, or shows network signatures predicted by a proposed architecture. The analyses will not claim to prove that a trait follows a specific architecture.
 
@@ -651,6 +656,6 @@ The following are not part of the initial project:
 * gene-regulatory networks;
 * rare-variant burden testing;
 * multi-ancestry comparisons;
-* extra sensitivity analysis.
+* additional sensitivity analyses beyond the prespecified BioGRID robustness analysis.
 
 These may be considered after the primary PPI-based project is completed.
