@@ -2,13 +2,13 @@
 
 ## Research question
 
-Do genes prioritized from common-variant GWAS occupy non-random positions in protein-protein interaction networks, and are the observed patterns consistent with proposed network signatures of complex-trait genetic architecture?
+Do genes prioritized from common-variant GWAS evidence occupy non-random positions in protein-protein interaction networks, and are the observed patterns consistent with proposed network signatures of complex-trait genetic architecture?
 
-The project will examine three network properties:
+The project will examine three network patterns:
 
-1. Gene connectivity
-2. Community organization and community-specific connectivity.
-3. Proximity of GWAS evidence to independently defined Mendelian or rare large-effect genes
+1. Gene connectivity: whether node degree is associated with gene-level GWAS evidence
+2. Community organization and community-specific connectivity: whether GWAS evidence differs across network communities and whether the association between node degree and GWAS evidence differs across communities
+3. Network proximity: whether GWAS-prioritized genes lie closer to independently defined trait-specific seed genes
 
 The analyses will identify patterns consistent with particular genetic architectures: omnigenic, stratagenic, infinitesimal, oligogenic, or related models.
 
@@ -89,10 +89,11 @@ Schizophrenia will be analyzed using:
 
 * GRCh37/hg19 coordinates;
 * GRCh37 gene annotations;
-* a matching GRCh37 LD reference panel, likely 1000 Genomes Phase 3 EUR;
+* a matching GRCh37 LD reference panel, 1000 Genomes Phase 3 EUR;
 * autosomal variants from the European-ancestry summary-statistics file;
 * biallelic SNPs only after harmonization;
 * valid p-values and genomic positions;
+* removal of low-imputation-quality variants by retaining only variants with IMPINFO >= 0.8;
 * common-variant filtering using reference-panel MAF >= 0.01 from the matched 1000 Genomes Phase 3 EUR reference panel;
 * available sample-size fields, especially `NCAS`, `NCON`;
 * stable gene identifiers for harmonization with the height analysis.
@@ -116,7 +117,7 @@ Primary analyses will initially be restricted to:
 * biallelic SNPs, because multi-allelic variants and indels can be harder to harmonize;
 * variants with valid GRCh37/hg19 positions;
 * variants with valid p-values;
-* variants passing dataset-specific quality filters, including `low_confidence_variant == false` for height; the schizophrenia `IMPINFO` threshold will be finalized during height-pipeline development and fixed before preregistration of the schizophrenia analysis;
+* variants passing dataset-specific quality filters, including `low_confidence_variant == false` for height; and `IMPINFO >= 0.8` for schizophrenia;
 * variants with reference-panel MAF `>= 0.01`;
 * variants present in the matched GRCh37 European LD reference panel.
 
@@ -132,7 +133,7 @@ The 1000 Genomes Phase 3 European reference panel will be used for:
 * reference-panel MAF calculation;
 * harmonization of GWAS variants to the LD reference.
 
-The MAGMA-provided reference data use 1000 Genomes Phase 3 variants and GRCh37/Build 37 coordinates.
+The MAGMA-provided reference data uses 1000 Genomes Phase 3 variants and GRCh37/Build 37 coordinates.
 
 Download:
 
@@ -349,7 +350,6 @@ log(publication_count + 1)
 This measure will be interpreted as an NCBI gene-linked PubMed publication-count proxy for research attention, not as an exhaustive count of all publications that mention a gene.
 
 
-
 ## SNP-to-gene mapping
 
 ### Primary gene-level analysis
@@ -392,7 +392,7 @@ A higher Z-score represents stronger gene-level GWAS association evidence.
 
 ### Primary network
 
-STRING human physical protein–protein interaction network:
+STRING human physical protein-protein interaction network:
 
 * species: Homo sapiens;
 * physical subnetwork;
@@ -412,7 +412,7 @@ This is the most interpretable connectivity measure.
 
 ### Robustness network
 
-BioGRID human physical protein–protein interaction network.
+BioGRID human physical protein-protein interaction network.
 
 The main analyses will be repeated using BioGRID to determine whether the conclusions depend on the STRING network.
 
@@ -425,7 +425,7 @@ For each trait and network, the analysis will include only genes that:
 * received a valid MAGMA gene-level association score; and
 * are present as nodes in the PPI network.
 
-Thus, the analysis universe is the intersection of the MAGMA gene set and the network gene set. More specifically, build and analyze the cleaned PPI network first. Calculate node degree, Leiden community membership, and RWR on the fixed PPI network. Then join the network results to MAGMA and restrict the regression analysis to genes with valid MAGMA scores.
+Thus, the analysis universe is the intersection of the MAGMA gene set and the network gene set. More specifically, first build and analyze the cleaned PPI network. Calculate node degree, Leiden community membership, and RWR on the fixed PPI network. Then join the network results to MAGMA and restrict the regression analysis to genes with valid MAGMA scores.
 
 Genes absent from the network will be excluded rather than assigned a degree of zero.
 
@@ -437,9 +437,17 @@ Leiden was selected because it matches the study’s definition of a community a
 
 Primary method: Leiden community detection.
 
-Leiden will divide the cleaned PPI network into densely and internally connected communities using network structure only. GWAS association scores will be added after communities have been defined.
+Leiden will divide the cleaned PPI network into densely and internally connected communities using network structure only. GWAS association scores will be added only after communities have been defined.
 
-The Leiden resolution parameter and random seed will be fixed before testing community enrichment.
+The primary Leiden analysis will use:
+
+* modularity as the objective function --- because the goal is to identify groups of genes that are more densely connected to each other than expected from the broader network structure;
+* resolution parameter `1.0` --- the standard modularity resolution; higher values produce more, smaller communities, whereas lower values produce fewer, larger communities;
+* an unweighted network --- because STRING `combined_score` is treated as confidence that an interaction exists rather than as biological interaction strength;
+* random seed `42` --- a fixed arbitrary integer used for reproducibility;
+* iterations continued until no further improvement in partition quality --- implemented using the Leiden algorithm's convergence option, which continues iterating until partition quality no longer improves.
+
+The resolution parameter and random seed are fixed independently of the GWAS association results and will not be tuned based on MAGMA Z-scores or community enrichment results.
 
 ## Mendelian and rare large-effect seed genes
 
@@ -449,20 +457,23 @@ Seed genes will be defined independently of the common-variant GWAS results.
 
 Primary seed set:
 
-* the curated abnormal-skeletal-growth gene set reported by Yengo et al. 2022;
-* because the GWAS analyses are restricted to autosomes, only autosomal seed genes will be used.
+* all 462 autosomal genes implicated in extreme height phenotypes and skeletal growth disorders reported in Yengo et al. 2022 Supplementary Table 11.
 
-This set includes genes involved in Mendelian disorders characterized by abnormal stature, skeletal growth, short stature, tall stature, overgrowth, skeletal dysplasia, or related growth phenotypes.
+These genes were curated from Mendelian and skeletal-growth disorders characterized by abnormal stature, short stature, tall stature, overgrowth, skeletal dysplasia, or related growth phenotypes.
+
+Because the GWAS analyses are restricted to autosomes, only autosomal seed genes will be used.
 
 ### Schizophrenia seeds
 
 Primary seed set:
 
-* rare large-effect schizophrenia genes identified independently of common-variant GWAS;
-* primary source: SCHEMA (Schizophrenia Exome Sequencing Meta-Analysis consortium) rare coding-variant results;
-* the initial seed set will use genes meeting the predefined strongest evidence threshold from SCHEMA;
+* the 10 exome-wide significant schizophrenia genes identified by the SCHEMA Consortium in Singh et al. 2022:
 
-These seed genes represent rare coding-variant evidence for schizophrenia risk and are independent of the common-variant GWAS summary statistics used for MAGMA.
+`SETD1A`, `CUL1`, `XPO7`, `TRIO`, `CACNA1G`, `SP4`, `GRIN2A`, `HERC1`, `RB1CC1`, and `GRIA3`.
+
+These genes were identified through rare coding-variant burden analyses and provide independently defined rare large-effect schizophrenia risk genes.
+
+The SCHEMA seed genes are independent of the common-variant PGC schizophrenia GWAS summary statistics used for MAGMA.
 
 ### Overlap handling
 
@@ -490,29 +501,33 @@ Question:
 
 The primary coefficient is the association between node degree and MAGMA Z-score.
 
-### 2. Community-specific connectivity analysis
 
-Question: 
-
-> Does the association between node degree and MAGMA Z-score differ across network communities?
-
-The primary analysis tests whether highly connected genes show stronger GWAS evidence in all communities, or whether the relationship between node degree and MAGMA Z-score is concentrated in particular communities.
-
-The primary inferential test is an omnibus test of the degree-by-community interaction, asking whether the association between node degree and MAGMA Z-score varies across network communities. Community-specific degree-MAGMA Z-score slopes will be reported as descriptive follow-up analyses to show where and in what direction the relationship differs.
-
-### 3. Community enrichment analysis
+### 2. Community organization and community-specific connectivity analysis
 
 Questions:
 
-> Are some network communities more enriched for GWAS evidence than others?
+> Does community membership explain variation in GWAS evidence?
 
-> Does community membership explain variation in GWAS evidence beyond individual gene characteristics?
+> Does the association between node degree and MAGMA Z-score differ across network communities?
 
-The primary analysis will compare continuous MAGMA gene-level Z-scores across Leiden communities.
+The primary model will be:
 
-Community membership will be tested as a predictor of MAGMA Z-score while adjusting for relevant gene-level covariates such as degree, gene length, number of SNPs included in the MAGMA gene test, and publication count. We adjust because a community may look important just because its genes are long, contain more SNPs, are highly connected, or are better studied.
+`MAGMA Z ~ degree + community + degree × community + gene length + number of SNPs + publication count`
 
-False-discovery-rate correction will be applied across community-level tests within each trait.
+Node degree will be centered before fitting the model so that community-level differences can be interpreted at the average degree of genes in the network.
+
+Two primary inferential tests will be performed.
+
+First, an omnibus community test will ask whether MAGMA Z-score differs across network communities after adjusting for gene-level characteristics. This tests whether community membership itself is associated with GWAS evidence.
+
+Second, an omnibus degree-by-community interaction test will ask whether the association between node degree and MAGMA Z-score differs across communities. This tests whether highly connected genes show stronger GWAS evidence throughout the network or primarily within particular communities.
+
+Community-level MAGMA Z-score patterns and community-specific degree–MAGMA Z-score slopes will be reported as follow-up summaries.
+
+Together, these analyses distinguish between a community in which genes generally show elevated GWAS evidence and a community in which, beyond the community-level pattern, highly connected genes also tend to show stronger GWAS evidence.
+
+False-discovery-rate correction will be applied to prespecified community-level follow-up tests within each trait.
+
 
 ### 4. Rare-seed proximity analysis
 
@@ -620,6 +635,9 @@ Relevant network signatures include:
 * little or no association between GWAS evidence and network proximity to independently defined seed genes.
 
 These patterns would be interpreted as more consistent with highly diffuse genetic effects that are not strongly organized according to the tested PPI network features.
+
+
+Note: polygenic-like differs from infinitesimal-like in that some network features remain informative, whereas infinitesimal-like shows no reproducible network organization.
 
 ## Interpretive principle
 
