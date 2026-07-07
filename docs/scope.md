@@ -96,8 +96,8 @@ Schizophrenia will be analyzed using:
 * removal of low-imputation-quality variants by retaining only variants with IMPINFO > 0.8;
 * common-variant filtering using reference-panel MAF >= 0.01 from the matched 1000 Genomes Phase 3 EUR reference panel;
 * available sample-size fields, especially `NCAS`, `NCON`;
-* stable gene identifiers for harmonization with the height analysis.
-* generally, the same MAGMA SNP-to-gene mapping framework used for height.
+* stable gene identifiers for harmonization with the height analysis;
+* the same MAGMA SNP-to-gene mapping framework used for height.
 
 ### Schizophrenia extended-MHC sensitivity analysis
 
@@ -492,17 +492,13 @@ Seed genes will be excluded from the tested GWAS gene set when evaluating the as
 
 Random Walk with Restart will be used to calculate the proximity of each network gene to the trait-specific seed genes.
 
-Primary restart probability:
-
-[
-r=0.5
-]
+Primary restart probability: `r=0.5`
 
 Each gene will receive an RWR score. A higher raw RWR score indicates greater network proximity to the trait-specific seed genes.
 
 Raw RWR scores will be retained for descriptive reporting.
 
-For the primary gene-property regression analysis, RWR scores will be rank-based inverse-normal transformed across the non-seed genes in the trait- and network-specific analysis universe. Higher transformed values will continue to represent greater seed proximity.
+For the primary gene-property regression analysis, RWR scores will be rank-based inverse-normal transformed (rank-INT) across the non-seed genes in the trait- and network-specific analysis universe. Higher transformed values will continue to represent greater seed proximity.
 
 The rank-based inverse-normal transformation is prespecified to reduce the influence of the highly concentrated upper tail of the RWR score distribution and to avoid interpreting absolute differences in raw RWR probability as linearly equivalent biological differences in proximity.
 
@@ -545,11 +541,11 @@ Question:
 
 > Do genes with stronger common-variant GWAS evidence lie closer in the network to independently defined trait-specific seed genes?
 
-A positive transformed RWR coefficient means that genes more strongly connected to the seed genes tend to have stronger common-variant GWAS evidence.
+A positive rank-INT RWR coefficient means that genes more strongly connected to the seed genes tend to have stronger common-variant GWAS evidence.
 
 The observed seed result will be compared with random seed sets matched on number of genes, node degree, publication count, and network component.
 
-The real network will remain fixed during these permutations. Only the observed and random seed labels change.
+The real network will remain fixed during these permutations. Only the observed and random seed labels change. For each matched random seed set, RWR scores will be recomputed, rank-INT transformed, and entered into the same MAGMA gene-property model used for the observed seed set. The observed rank-INT RWR regression coefficient will be compared with the distribution of corresponding coefficients obtained from the matched random seed sets.
 
 This is to test whether common-variant GWAS evidence is closer to independently defined trait-specific seed genes than expected for genes with similar connectedness, publication attention, and network location.
 
@@ -576,7 +572,7 @@ Publication attention will be represented as:
 
 Each primary analysis will be reported using a base model and a publication-attention-adjusted model that additionally includes the publication-attention covariate.
 
-In the primary proximity models, `transformed RWR score` refers to the prespecified rank-based inverse-normal transformation of the raw RWR score.
+In the primary proximity models, `rank-INT RWR score` refers to the prespecified rank-based inverse-normal transformation of the raw RWR score.
 
 ### Connectivity analysis
 
@@ -628,11 +624,11 @@ False-discovery-rate correction will be applied separately across community-memb
 
 Base model of interest:
 
-`MAGMA Z ~ transformed RWR score + degree + gene length`
+`MAGMA Z ~ rank-INT RWR score + degree + gene length`
 
 Publication-attention-adjusted model of interest:
 
-`MAGMA Z ~ transformed RWR score + degree + gene length + log(publication_count + 1)`
+`MAGMA Z ~ rank-INT RWR score + degree + gene length + log(publication_count + 1)`
 
 The MAGMA automatic technical covariates will be retained in both models.
 
