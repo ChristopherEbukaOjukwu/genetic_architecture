@@ -55,7 +55,7 @@ wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/annotations/va
 ```
 File checks from local download:
 
-* GWAS file: `13,791,468` lines, corresponding to `13,791,467` variant records plus one header line.
+* GWAS file: `13,791,468` lines corresponding to `13,791,467` variant lines, both including one header line.
 * The GWAS file and variant metadata file can be joined by the `variant` column.
 
 Height will be analyzed using:
@@ -101,13 +101,20 @@ Schizophrenia will be analyzed using:
 
 ### Schizophrenia extended-MHC sensitivity analysis
 
-The primary schizophrenia analyses will retain eligible genes in the extended MHC region because the primary analysis is intended to characterize genome-wide common-variant GWAS organization.
+The primary schizophrenia analyses will retain eligible genes in the extended MHC region 
+because the primary analysis is intended to characterize genome-wide common-variant GWAS organization.
 
-A schizophrenia-specific sensitivity analysis will repeat the three primary analyses after excluding genes whose GRCh37 gene-body coordinates overlap the extended MHC region on chromosome 6 from 25 Mb to 35 Mb.
+A schizophrenia-specific sensitivity analysis will repeat the three primary analyses after excluding 
+genes whose GRCh37 gene-body coordinates overlap the extended MHC region on chromosome 6 from 25 Mb to 35 Mb.
 
-The cleaned PPI network and previously calculated network metrics will remain fixed. Extended-MHC genes will be excluded from the schizophrenia gene-level analysis universe for the sensitivity analysis rather than rebuilding the network.
+The extended MHC region will be excluded because its unusually complex LD structure can produce broad, 
+correlated association signals that may disproportionately influence gene-level and network analyses.
 
-This sensitivity analysis will determine whether the direction and interpretation of the schizophrenia network results are primarily driven by the unusually strong and high-LD extended-MHC region.
+The cleaned PPI network and previously calculated network metrics will remain fixed. Extended-MHC genes 
+will be excluded from the schizophrenia gene-level analysis universe for the sensitivity analysis rather than rebuilding the network.
+
+This sensitivity analysis will determine whether the direction and interpretation of the schizophrenia network 
+results are primarily driven by the unusually strong and high-LD extended-MHC region.
 
 ## Variant set
 
@@ -476,9 +483,7 @@ Because the GWAS analyses are restricted to autosomes, only autosomal seed genes
 
 Primary seed set:
 
-* the 10 exome-wide significant schizophrenia genes identified by the SCHEMA Consortium in Singh et al. 2022:
-
-`SETD1A`, `CUL1`, `XPO7`, `TRIO`, `CACNA1G`, `SP4`, `GRIN2A`, `HERC1`, `RB1CC1`, and `GRIA3`.
+* the 10 exome-wide significant schizophrenia genes identified by the SCHEMA Consortium in Singh et al. 2022.
 
 These genes were identified through rare coding-variant burden analyses and provide independently defined rare large-effect schizophrenia risk genes.
 
@@ -500,7 +505,7 @@ Raw RWR scores will be retained for descriptive reporting.
 
 For the primary gene-property regression analysis, RWR scores will be rank-based inverse-normal transformed (rank-INT) across the non-seed genes in the trait- and network-specific analysis universe. Higher transformed values will continue to represent greater seed proximity.
 
-The rank-based inverse-normal transformation is prespecified to reduce the influence of the highly concentrated upper tail of the RWR score distribution and to avoid interpreting absolute differences in raw RWR probability as linearly equivalent biological differences in proximity.
+The rank-based inverse-normal transformation is prespecified to reduce the influence of a small number of very high RWR scores and to avoid assuming that equal differences in raw RWR scores represent equal biological differences in network proximity.
 
 The same transformation procedure will be applied to RWR scores generated from the observed seed set and from each matched random seed set before regression analysis.
 
@@ -562,9 +567,15 @@ To account for this, publication count will be included as a proxy for research 
 
 Primary gene-level regression analyses will be performed using the MAGMA generalized gene-property analysis framework.
 
-MAGMA's gene–gene correlation structure and automatic technical covariates will be retained in all primary models. These automatic technical adjustments include gene size measured by the number of analyzed SNPs, gene density representing within-gene LD, inverse mean minor allele count, and per-gene sample size when sample size varies across genes.
+MAGMA's gene–gene correlation structure and automatic technical covariates will be retained in all primary models. 
+These automatic technical adjustments include gene size measured by the number of analyzed SNPs, gene density representing 
+within-gene LD, inverse mean minor allele count, and per-gene sample size when sample size varies across genes.
 
-Physical gene length will additionally be included as a prespecified gene-level covariate. Gene length will be calculated from the unextended gene-body coordinates in the GRCh37 `NCBI37.3.gene.loc` file and will not include the 35 kb upstream and 10 kb downstream SNP-mapping window. Physical gene length is retained in addition to MAGMA's SNP-count-based gene-size correction because the two capture different aspects of gene size. MAGMA's automatic gene-size covariate represents the number of analyzed SNPs assigned to a gene, whereas physical gene length represents the genomic span of the gene body in base pairs.
+Physical gene length will additionally be included as a prespecified gene-level covariate. Gene length will be calculated 
+from the unextended gene-body coordinates in the GRCh37 `NCBI37.3.gene.loc` file and will not include the 35 kb upstream 
+and 10 kb downstream SNP-mapping window. Physical gene length is retained in addition to MAGMA's SNP-count-based gene-size 
+correction because the two capture different aspects of gene size. MAGMA's automatic gene-size covariate represents the 
+number of analyzed SNPs assigned to a gene, whereas physical gene length represents the genomic span of the gene body in base pairs.
 
 Publication attention will be represented as:
 
@@ -586,13 +597,19 @@ Publication-attention-adjusted model of interest:
 
 The MAGMA automatic technical covariates will be retained in both models.
 
-Community membership will not be included because this analysis tests the overall association between node degree and GWAS evidence across the network.
+Community membership will not be included because this analysis tests the overall 
+association between node degree and GWAS evidence across the network.
 
 ### Community organization and community-specific connectivity analysis
 
-Leiden communities will be represented as gene sets in MAGMA. Node degree, physical gene length, and publication attention will be supplied as continuous gene properties.
+Leiden communities will be represented as gene sets in MAGMA. Node degree, physical gene length, 
+and publication attention will be supplied as continuous gene properties.
 
-Community organization will be evaluated by testing each Leiden community for differences in gene-level GWAS evidence relative to genes outside that community. For degree-by-community interaction analyses, only Leiden communities satisfying MAGMA's default gene-set-by-continuous-property interaction size criterion will be tested. The tested community must contain at least 100 genes in the trait- and network-specific analysis universe and no more than the total number of analyzed genes minus 100.
+Community organization will be evaluated by testing each Leiden community for differences in gene-level 
+GWAS evidence relative to genes outside that community. For degree-by-community interaction analyses, 
+only Leiden communities satisfying MAGMA's default gene-set-by-continuous-property interaction size 
+criterion will be tested. The tested community must contain at least 100 genes in the trait- and network-specific 
+analysis universe and no more than the total number of analyzed genes minus 100.
 
 Base model of interest:
 
@@ -602,7 +619,8 @@ Publication-attention-adjusted model of interest:
 
 `MAGMA Z ~ community membership + gene length + log(publication_count + 1)`
 
-Community-specific connectivity will be evaluated using MAGMA's native gene-set-by-continuous-gene-property interaction framework, with Leiden community membership represented as the gene set and node degree represented as the continuous gene property.
+Community-specific connectivity will be evaluated using MAGMA's native gene-set-by-continuous-gene-property 
+interaction framework, with Leiden community membership represented as the gene set and node degree represented as the continuous gene property.
 
 Conceptual interaction model:
 
@@ -612,13 +630,16 @@ Publication-attention-adjusted conceptual interaction model:
 
 `MAGMA Z ~ degree + community membership + degree × community membership + gene length + log(publication_count + 1)`
 
-MAGMA internally centers the continuous gene property on its mean within the tested gene set when defining the interaction term. Degree-by-community interaction terms will therefore be generated using MAGMA's native interaction analysis rather than manually constructed interaction columns.
+MAGMA internally centers the continuous gene property on its mean within the tested gene set 
+when defining the interaction term. Degree-by-community interaction terms will therefore be generated 
+using MAGMA's native interaction analysis rather than manually constructed interaction columns.
 
 Gene length and publication attention will be included as conditioning gene properties in the applicable models.
 
 The MAGMA automatic technical covariates will be retained in all models.
 
-False-discovery-rate correction will be applied separately across community-membership tests and degree-by-community interaction tests within each trait.
+False-discovery-rate correction will be applied separately across community-membership 
+tests and degree-by-community interaction tests within each trait.
 
 ### Rare-seed proximity analysis
 
@@ -632,15 +653,19 @@ Publication-attention-adjusted model of interest:
 
 The MAGMA automatic technical covariates will be retained in both models.
 
-Node degree will be included to distinguish seed proximity from general network connectedness. Community membership will not be included in the primary proximity model because the primary question concerns overall convergence toward independently defined seed genes.
+Node degree will be included to distinguish seed proximity from general network connectedness. 
+Community membership will not be included in the primary proximity model because the 
+primary question concerns overall convergence toward independently defined seed genes.
 
-The same primary model specifications will be used for height and schizophrenia and for the corresponding STRING and BioGRID analyses.
+The same primary model specifications will be used for height and schizophrenia and 
+for the corresponding STRING and BioGRID analyses.
 
 ## Architectural interpretation
 
 The three primary analyses will be interpreted jointly.
 
-The analyses are not intended to assign a trait to a mutually exclusive genetic-architecture category or to define a numerical threshold at which a trait is classified as omnigenic, stratagenic, oligogenic, polygenic, or infinitesimal.
+The analyses are not intended to assign a trait to a mutually exclusive genetic-architecture category 
+or to define a numerical threshold at which a trait is classified as omnigenic, stratagenic, oligogenic, polygenic, or infinitesimal.
 
 Instead, the observed combination of network signatures will be compared with qualitative predictions from proposed models of complex-trait genetic architecture.
 
@@ -648,7 +673,8 @@ Architecture interpretation will therefore be comparative and signature-based ra
 
 ### Evidence more consistent with an omnigenic-like organization
 
-A broadly distributed common-variant GWAS signal, together with evidence of convergence toward independently defined trait-relevant seed genes, would strengthen an omnigenic-like interpretation.
+A broadly distributed common-variant GWAS signal, together with evidence of convergence toward 
+independently defined trait-relevant seed genes, would strengthen an omnigenic-like interpretation.
 
 Relevant network signatures include:
 
@@ -657,11 +683,13 @@ Relevant network signatures include:
 * network proximity that is not explained solely by a small number of communities;
 * evidence that connectivity is informative within multiple parts of the network rather than being restricted to one isolated module;
 
-These patterns would be interpreted as more consistent with widespread peripheral genetic effects that remain connected to a smaller set of trait-relevant biological genes.
+These patterns would be interpreted as more consistent with widespread peripheral genetic 
+effects that remain connected to a smaller set of trait-relevant biological genes.
 
 ### Evidence more consistent with a stratagenic-like organization
 
-A stratagenic-like interpretation would be strengthened by evidence that GWAS associations are unevenly organized across network communities and that connectivity is informative primarily within particular network contexts.
+A stratagenic-like interpretation would be strengthened by evidence that GWAS associations
+are unevenly organized across network communities and that connectivity is informative primarily within particular network contexts.
 
 Relevant network signatures include:
 
@@ -674,7 +702,8 @@ Relevant network signatures include:
 These patterns would be interpreted as more consistent with genetic evidence being stratified across functionally relevant network layers or modules.
 
 ### Evidence more consistent with a polygenic-like organization
-A polygenic-like interpretation would be strengthened by evidence that GWAS association is distributed across many genes rather than dominated by a small number of genes, loci, or network regions.
+A polygenic-like interpretation would be strengthened by evidence that GWAS association 
+is distributed across many genes rather than dominated by a small number of genes, loci, or network regions.
 
 Relevant network signatures include:
 
@@ -698,7 +727,8 @@ These patterns would be interpreted as more consistent with an architecture domi
 
 ### Evidence more consistent with an infinitesimal-like organization
 
-An infinitesimal-like interpretation would be strengthened by broadly distributed GWAS evidence with little reproducible organization of GWAS evidence across network communities or proximity patterns.
+An infinitesimal-like interpretation would be strengthened by broadly distributed GWAS evidence 
+with little reproducible organization of GWAS evidence across network communities or proximity patterns.
 
 Relevant network signatures include:
 
@@ -717,9 +747,12 @@ Note: polygenic-like differs from infinitesimal-like in that some network featur
 
 No individual analysis will be treated as sufficient evidence for a specific genetic-architecture model.
 
-Interpretation will be based on the joint direction, magnitude, robustness, and consistency of results across connectivity, community organization and community-specific connectivity, and rare-seed proximity analyses, including the directional consistency of results across STRING and BioGRID sensitivity analyses.
+Interpretation will be based on the joint direction, magnitude, robustness, and consistency of results 
+across connectivity, community organization and community-specific connectivity, and rare-seed proximity
+analyses, including the directional consistency of results across STRING and BioGRID sensitivity analyses.
 
-The final conclusions will use language such as more consistent with, less consistent with, or shows network signatures predicted by a proposed architecture. The analyses will not claim to prove that a trait follows a specific architecture.
+The final conclusions will use language such as more consistent with, less consistent with, or shows 
+network signatures predicted by a proposed architecture. The analyses will not claim to prove that a trait follows a specific architecture.
 
 ## Development and preregistration plan
 
