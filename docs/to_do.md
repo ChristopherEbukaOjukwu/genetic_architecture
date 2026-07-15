@@ -52,6 +52,8 @@ g1000_eur.fam
 ```
 
 The reference-panel MAF file will also be generated using PLINK:
+For every variant in the 1000 Genomes European reference panel,
+its allele frequency is calculated. 
 
 ```bash
 plink \
