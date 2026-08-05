@@ -1,3 +1,4 @@
+````markdown
 # UK Biobank Height GWAS Replication with REGENIE
 
 ## Purpose
@@ -10,28 +11,28 @@ The goal was to understand and reproduce the full path from participant phenotyp
 
 ## Computing environment
 
-* Cluster: CU Boulder Research Computing
-* Scheduler: Blanca
-* Partition/account/QoS: `blanca-ibg`
-* Working directory:
+- Cluster: CU Boulder Research Computing
+- Scheduler: Blanca
+- Partition/account/QoS: `blanca-ibg`
+- Working directory:
 
 ```bash
 /pl/active/IBG/people/choj8503/gwas_test/regenie_gwas_example
 ```
 
-* Scratch directory:
+- Scratch directory:
 
 ```bash
 /scratch/alpine/choj8503/gwas_test/regenie_gwas_example
 ```
 
-* REGENIE:
+- REGENIE:
 
 ```bash
 /pl/active/IBG/opt/bin/regenie
 ```
 
-* PLINK 2:
+- PLINK 2:
 
 ```bash
 /pl/active/IBG/opt/bin/plink2
@@ -74,8 +75,8 @@ FID IID height height2 height3 height4
 
 The file contained:
 
-* 502,359 participant rows, excluding the header
-* 499,818 nonmissing values for the first height measurement
+- 502,359 participant rows, excluding the header
+- 499,818 nonmissing values for the first height measurement
 
 For this replication, I used only the first height measurement:
 
@@ -114,14 +115,14 @@ eur.qc.fam
 
 Their roles were:
 
-* `.bed`: participant genotype values
-* `.bim`: SNP identifiers, chromosome positions, and allele information
-* `.fam`: participant identifiers
+- `.bed`: participant genotype values
+- `.bim`: SNP identifiers, chromosome positions, and allele information
+- `.fam`: participant identifiers
 
 The dataset contained:
 
-* 436,111 participant rows in `.fam`
-* 125,546 SNPs in `.bim`
+- 436,111 participant rows in `.fam`
+- 125,546 SNPs in `.bim`
 
 These SNPs had already undergone ancestry restriction, quality control, MAF filtering, and LD pruning.
 
@@ -208,9 +209,9 @@ height_pred.list
 
 Their roles were:
 
-* `height.log`: record of the Step 1 model, sample, SNPs, ridge settings, R-squared, MSE, warnings, and runtime
-* `height_1.loco`: chromosome-specific participant background predictions
-* `height_pred.list`: pointer telling Step 2 where the LOCO file is stored
+- `height.log`: record of the Step 1 model, sample, SNPs, ridge settings, R-squared, MSE, warnings, and runtime
+- `height_1.loco`: chromosome-specific participant background predictions
+- `height_pred.list`: pointer telling Step 2 where the LOCO file is stored
 
 The prediction-list file contained:
 
@@ -256,8 +257,8 @@ awk '$8>0.9 && $7>=0.00001 {print $2}' \
 
 This retained variants with:
 
-* imputation R-squared greater than 0.9
-* an initial MAF of at least 0.00001
+- imputation R-squared greater than 0.9
+- an initial MAF of at least 0.00001
 
 Imputation R-squared measures how reliably an untyped genotype was inferred from nearby observed variants and a reference panel.
 
@@ -276,10 +277,10 @@ PLINK 2 then applied:
 
 These filters mean:
 
-* `--maf 0.001`: keep variants with MAF of at least 0.1%
-* `--hwe 1e-9 keep-fewhet`: remove variants with extreme Hardy-Weinberg disequilibrium, especially excess heterozygosity
-* `--geno 0.05`: remove variants missing genotype calls in more than 5% of participants
-* `--max-alleles 2`: retain biallelic variants
+- `--maf 0.001`: keep variants with MAF of at least 0.1%
+- `--hwe 1e-9 keep-fewhet`: remove variants with extreme Hardy-Weinberg disequilibrium, especially excess heterozygosity
+- `--geno 0.05`: remove variants missing genotype calls in more than 5% of participants
+- `--max-alleles 2`: retain biallelic variants
 
 The final MAF threshold was therefore 0.1%, not the conventional 1% threshold for common variants.
 
@@ -453,17 +454,17 @@ height.22_height.regenie.gz
 The number of tested variants was:
 
 | Chromosome | Tested variants |
-| ---------- | --------------: |
-| 14         |         336,431 |
-| 15         |         291,465 |
-| 16         |         316,407 |
-| 17         |         267,698 |
-| 18         |         291,742 |
-| 19         |         223,935 |
-| 20         |         227,945 |
-| 21         |         136,696 |
-| 22         |         134,933 |
-| **Total**  |   **2,227,252** |
+|---|---:|
+| 14 | 336,431 |
+| 15 | 291,465 |
+| 16 | 316,407 |
+| 17 | 267,698 |
+| 18 | 291,742 |
+| 19 | 223,935 |
+| 20 | 227,945 |
+| 21 | 136,696 |
+| 22 | 134,933 |
+| **Total** | **2,227,252** |
 
 ---
 
@@ -491,19 +492,19 @@ EXTRA
 
 Their meanings are:
 
-* `CHROM`: chromosome
-* `GENPOS`: genomic position
-* `ID`: variant identifier
-* `ALLELE0`: other allele
-* `ALLELE1`: tested or effect allele
-* `A1FREQ`: frequency of the tested allele
-* `N`: number of participants included for that SNP
-* `TEST`: association model; here `ADD` for additive
-* `BETA`: estimated effect of each additional copy of `ALLELE1`
-* `SE`: standard error, or uncertainty, around the beta
-* `CHISQ`: association-test statistic
-* `LOG10P`: negative base-10 logarithm of the p-value
-* `EXTRA`: additional test information, not used for the standard quantitative-trait test
+- `CHROM`: chromosome
+- `GENPOS`: genomic position
+- `ID`: variant identifier
+- `ALLELE0`: other allele
+- `ALLELE1`: tested or effect allele
+- `A1FREQ`: frequency of the tested allele
+- `N`: number of participants included for that SNP
+- `TEST`: association model; here `ADD` for additive
+- `BETA`: estimated effect of each additional copy of `ALLELE1`
+- `SE`: standard error, or uncertainty, around the beta
+- `CHISQ`: association-test statistic
+- `LOG10P`: negative base-10 logarithm of the p-value
+- `EXTRA`: additional test information, not used for the standard quantitative-trait test
 
 For example:
 
@@ -522,12 +523,12 @@ LOG10P=1.156
 
 This means:
 
-* the SNP is on chromosome 22
-* A is the tested allele
-* A has a frequency of about 7.62%
-* 424,966 participants contributed to the test
-* each additional A allele was associated with a small positive change in standardized adjusted height
-* the corresponding p-value was approximately 0.07, so this SNP was not genome-wide significant
+- the SNP is on chromosome 22
+- A is the tested allele
+- A has a frequency of about 7.62%
+- 424,966 participants contributed to the test
+- each additional A allele was associated with a small positive change in standardized adjusted height
+- the corresponding p-value was approximately 0.07, so this SNP was not genome-wide significant
 
 REGENIE reports:
 
@@ -595,7 +596,8 @@ Combine and use in the downstream MAGMA and network pipeline
 
 At the last observed point:
 
-* Step 1 was complete
-* Step 2 chromosomes 14-22 were complete
-* chromosomes 1-13 had been corrected for memory use and resubmitted
-* the rerun was waiting for Blanca maintenance to end
+- Step 1 was complete
+- Step 2 chromosomes 14-22 were complete
+- chromosomes 1-13 had been corrected for memory use and resubmitted
+- the rerun was waiting for Blanca maintenance to end
+````
