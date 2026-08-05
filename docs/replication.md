@@ -1,4 +1,3 @@
-````markdown
 # UK Biobank Height GWAS Replication with REGENIE
 
 ## Purpose
@@ -600,4 +599,3 @@ At the last observed point:
 - Step 2 chromosomes 14-22 were complete
 - chromosomes 1-13 had been corrected for memory use and resubmitted
 - the rerun was waiting for Blanca maintenance to end
-````
