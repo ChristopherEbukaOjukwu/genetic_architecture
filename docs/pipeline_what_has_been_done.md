@@ -4,38 +4,34 @@
 
 **Project:** Network organization of common-variant genetic associations
 **Development trait:** Height
-**Current status:** Height MAGMA gene analysis completed successfully
-**Last completed stage:** MAGMA gene-level association analysis
+**Current status:** MAGMA and STRING network preparation complete
+**Next step:** Merge MAGMA gene scores with network properties
 
 ---
 
 ## 1. Research question
 
-The project asks:
-
 > Do common-variant GWAS associations occupy non-random positions in protein–protein interaction networks?
 
-The broader goal is to determine whether common genetic effects are biologically organized rather than randomly scattered across genes.
-
-For height, the planned analyses will test whether genes with stronger MAGMA association scores:
+For height, the primary analyses test whether genes with stronger common-variant association:
 
 1. have higher network degree;
-2. are concentrated in particular network communities;
-3. are closer in the protein interaction network to rare, large-effect height genes.
+2. are non-randomly distributed across network communities;
+3. lie closer to independently defined rare, large-effect height genes.
 
-The analysis is intended to evaluate whether common-variant architecture displays network signatures consistent with core–peripheral, modular, or omnigenic models.
+The broader objective is to evaluate network signatures consistent with modular, core–peripheral, and omnigenic models of complex-trait architecture.
 
 ---
 
-## 2. Computing environment
+## 2. Project environment
 
-The project is stored at:
+Project root:
 
 ```text
 /pl/active/IBG/people/choj8503/genetic_architecture
 ```
 
-Repository structure:
+Main directories:
 
 ```text
 config/
@@ -44,10 +40,11 @@ docs/
 jobs/
 logs/
 results/
+scripts/
 src/
 ```
 
-Heavy analyses are submitted through Slurm to:
+Heavy analyses use Slurm:
 
 ```text
 partition: blanca-ibg
@@ -55,23 +52,16 @@ account: blanca-ibg
 qos: blanca-ibg
 ```
 
-The login node is used only for file inspection, editing, and job submission.
-
-MAGMA is available at:
+MAGMA:
 
 ```text
 /pl/active/IBG/opt/bin/magma
-```
-
-Version:
-
-```text
 MAGMA v1.10
 ```
 
 ---
 
-## 3. Raw input data
+## 3. Input data
 
 ### Height GWAS
 
@@ -80,33 +70,7 @@ data/raw/height/50_irnt.gwas.imputed_v3.both_sexes.tsv.bgz
 data/raw/height/variants.tsv.bgz
 ```
 
-The GWAS file contains the height association statistics, including:
-
-```text
-variant
-pval
-beta
-se
-n_complete_samples
-low_confidence_variant
-```
-
-The accompanying `variants.tsv` file contains variant metadata, including:
-
-```text
-variant
-chr
-pos
-ref
-alt
-rsid
-consequence
-info
-call_rate
-allele frequency
-```
-
-### 1000 Genomes EUR reference
+### 1000 Genomes European LD reference
 
 ```text
 data/raw/g1000_eur/g1000_eur.bed
@@ -116,11 +80,11 @@ data/raw/g1000_eur/g1000_eur.frq
 data/raw/g1000_eur/g1000_eur.synonyms
 ```
 
-Reference sample size:
+Reference:
 
 ```text
 503 European individuals
-1006 observed autosomal chromosomes
+1006 autosomal chromosomes
 ```
 
 ### Gene annotation
@@ -129,18 +93,9 @@ Reference sample size:
 data/raw/NCBI37.3/NCBI37.3.gene.loc
 ```
 
-The annotation contains:
+Contains Entrez Gene ID, chromosome, gene coordinates, strand, and gene symbol.
 
-```text
-Entrez Gene ID
-chromosome
-gene start
-gene stop
-strand
-gene symbol
-```
-
-### STRING network
+### STRING physical PPI network
 
 ```text
 data/raw/string/9606.protein.physical.links.v12.0.txt.gz
@@ -148,21 +103,23 @@ data/raw/string/9606.protein.info.v12.0.txt.gz
 data/raw/string/9606.protein.aliases.v12.0.txt.gz
 ```
 
-### Publication attention
+### Publication data
 
 ```text
 data/raw/gene2pubmed/
 ```
 
-### Height seed genes
+### Height seed source
 
 ```text
 data/raw/height/seed/Yengo_2022_supplementary_tables.xlsx
 ```
 
+Seed genes will be defined independently of the common-variant GWAS.
+
 ---
 
-## 4. Step 01: Prepare the height GWAS
+## 4. Height GWAS preparation
 
 Script:
 
@@ -170,31 +127,23 @@ Script:
 src/01_prepare_height_gwas.py
 ```
 
-The script reads the GWAS file and `variants.tsv` together and verifies that the variant identifiers match on every row.
-
-The following filters were applied sequentially:
+Sequential filters:
 
 ```text
-Raw height GWAS
-Join to variants.tsv
-Retain chromosomes 1–22
-Retain biallelic SNPs
-Require valid genomic position
-Require valid p-value
-Require valid sample size
-Remove low-confidence variants
-Match to 1000 Genomes EUR by chromosome, position, and alleles
-Add reference-panel MAF
-Retain reference MAF ≥ 0.01
+Raw GWAS
+→ join variant metadata
+→ chromosomes 1–22
+→ biallelic SNPs
+→ valid genomic position
+→ valid p-value
+→ valid sample size
+→ remove low-confidence variants
+→ match to 1000 Genomes EUR
+→ assign reference-panel MAF
+→ retain MAF ≥ 0.01
 ```
 
-The 1000 Genomes reference was used at this stage to:
-
-1. confirm that the SNP was represented in the European reference panel;
-2. obtain a standardized reference-panel MAF;
-3. retain common variants with MAF of at least 1%.
-
-### Final QC counts
+### QC
 
 ```text
 stage                         variants_retained  removed_from_previous
@@ -211,56 +160,39 @@ reference_maf_ge_0.01          8,249,300         3,013,648
 final_magma_ready_variants     8,249,300         0
 ```
 
-Approximately 59.8% of the original variants remained.
+Final:
 
-Output files:
+```text
+8,249,300 SNPs
+```
+
+Outputs:
 
 ```text
 data/processed/height_magma_input.tsv
 results/01_height_gwas_qc.tsv
 ```
 
-The final SNP-level file contains:
-
-```text
-SNP
-CHR
-BP
-REF
-ALT
-P
-N
-REF_MAF
-HEIGHT_VARIANT
-```
-
-Validation checks confirmed:
-
-* 8,249,300 variant rows plus one header;
-* consistent tab-separated column counts;
-* no duplicate SNP identifiers;
-* data begin on chromosome 1 and end on chromosome 22.
+The 1000 Genomes EUR reference was used here for variant matching and standardized MAF filtering.
 
 ---
 
-## 5. Step 02: MAGMA SNP-to-gene annotation
+## 5. MAGMA SNP-to-gene annotation
 
-MAGMA assigned SNPs to genes using:
+SNPs were assigned positionally using:
 
 ```text
-gene body
-+ 35 kb upstream
-+ 10 kb downstream
+gene body + 35 kb upstream + 10 kb downstream
 ```
 
-Input files:
+Inputs:
 
 ```text
 data/processed/height_magma_snploc.tsv
 data/raw/NCBI37.3/NCBI37.3.gene.loc
 ```
 
-MAGMA command conceptually used:
+Command:
 
 ```bash
 magma \
@@ -276,57 +208,31 @@ Output:
 data/processed/height_magma_35up_10down.genes.annot
 ```
 
-MAGMA identified:
+Result:
 
 ```text
-18,418 gene definitions containing usable SNPs
+18,418 genes containing usable SNPs
 ```
 
-The assignment is positional.
+Overlapping gene windows allow a SNP to be assigned to more than one gene.
 
-For example:
-
-```text
-Entrez ID: 148398
-Gene symbol: SAMD11
-Original interval: chr1:859,993–879,961
-Extended interval: chr1:824,993–889,961
-```
-
-The SNP:
-
-```text
-rs4475692
-chr1:825,069
-```
-
-was assigned to SAMD11 because it fell inside the extended interval.
-
-A SNP may be assigned to multiple nearby genes when gene windows overlap.
-
-This step does not claim that the SNP functionally regulates the gene. It creates a consistent positional mapping for the MAGMA analysis.
+This mapping is positional and does not imply functional regulation.
 
 ---
 
-## 6. Step 03: MAGMA gene analysis
+## 6. MAGMA gene association analysis
 
-The gene analysis combined:
+MAGMA combined:
 
 ```text
-height SNP p-values
+GWAS SNP p-values
 +
-SNP-to-gene annotation
+SNP-to-gene assignments
 +
-1000 Genomes EUR LD structure
+1000 Genomes EUR LD
 ```
 
-The 1000 Genomes reference was used again here for a different reason than in Step 01.
-
-In Step 01, it was used for variant matching and MAF filtering.
-
-In the MAGMA gene analysis, the `.bed`, `.bim`, and `.fam` files were used to estimate linkage disequilibrium among SNPs. This prevents correlated SNPs from being counted as independent evidence.
-
-MAGMA command:
+Command:
 
 ```bash
 /pl/active/IBG/opt/bin/magma \
@@ -337,24 +243,24 @@ MAGMA command:
   --out results/magma/height_35up_10down
 ```
 
-The analysis used:
+Analysis:
 
 ```text
-503 European reference individuals
-8,249,300 valid height SNPs
+8,249,300 SNPs
 18,418 genes
-SNPwise-mean gene model
-per-SNP sample-size column N
+503-person EUR LD reference
+SNP-wise mean gene model
+per-SNP sample size
 ```
 
-Slurm job:
+Slurm:
 
 ```text
 Job ID: 27278590
 State: COMPLETED
 Exit code: 0:0
-Elapsed time: 03:59:59
-Maximum memory: approximately 2.9 GB
+Elapsed: 03:59:59
+Maximum memory: ~2.9 GB
 ```
 
 Outputs:
@@ -366,7 +272,7 @@ results/magma/height_35up_10down.log
 results/magma/height_35up_10down.log.suppl
 ```
 
-The readable `.genes.out` file contains:
+Main gene-level fields:
 
 ```text
 GENE
@@ -380,139 +286,333 @@ ZSTAT
 P
 ```
 
-Interpretation:
-
-```text
-GENE     Entrez Gene ID
-NSNPS    number of SNPs assigned to the gene
-NPARAM   effective number of statistical parameters after accounting for LD
-N        GWAS sample size
-ZSTAT    MAGMA gene-level association Z-score
-P        gene-level association p-value
-```
-
-The primary outcome for the network analyses is:
+Primary downstream outcome:
 
 ```text
 MAGMA ZSTAT
 ```
 
-The analysis will retain all eligible genes and use the continuous Z-score rather than analyzing only statistically significant genes.
+All eligible genes are retained; analyses are not restricted to genome-wide significant genes.
 
 ---
 
-## 7. Current interpretation
+## 7. MAGMA gene table
 
-The pipeline has transformed:
+Entrez Gene IDs were mapped to gene symbols using:
 
 ```text
-13.8 million raw height variants
+data/raw/NCBI37.3/NCBI37.3.gene.loc
 ```
 
-into:
+Output:
 
 ```text
-8.25 million cleaned common SNPs
+results/gene_tables/height_35up_10down_genes.tsv
 ```
 
-and then into:
+Columns:
 
 ```text
-18,418 gene-level height association scores
+GENE
+SYMBOL
+CHR
+START
+STOP
+NSNPS
+NPARAM
+N
+ZSTAT
+P
+```
+
+QC:
+
+```text
+MAGMA genes:          18,418
+Mapped gene symbols:  18,418
+Missing symbols:           0
 ```
 
 ---
 
-## 8. Next steps
+## 8. STRING physical network construction
 
-### Immediate next step
-
-Create:
+Script:
 
 ```text
-data/processed/height_magma_genes.tsv
+scripts/build_string_physical_network.py
 ```
 
-This table should join the MAGMA results back to `NCBI37.3.gene.loc` and contain:
+Inputs:
 
 ```text
-Entrez Gene ID
-gene symbol
-chromosome
-gene start
-gene stop
-number of SNPs
-effective parameters
-sample size
-MAGMA Z-score
-gene p-value
+data/raw/string/9606.protein.physical.links.v12.0.txt.gz
+data/raw/string/9606.protein.info.v12.0.txt.gz
 ```
 
-### STRING network construction
-
-Create:
-
-```text
-src/02_build_string_network.py
-```
-
-Apply:
+Network rules:
 
 ```text
 Homo sapiens
 physical interactions
 combined_score ≥ 700
-map STRING proteins to Entrez Gene IDs
-protein-coding genes only
-undirected edges
+map STRING protein IDs to preferred gene names
+undirected network
 remove self-loops
-collapse duplicate edges
+collapse duplicate gene pairs
 ```
 
-Outputs:
+When multiple protein-level records mapped to the same gene pair, the maximum STRING confidence score was retained.
+
+The primary topology analyses treat the thresholded network as unweighted.
+
+### QC
 
 ```text
-data/processed/string_physical_700_edges.tsv
-data/processed/string_network_genes.tsv
+STRING protein mappings:             19,699
+Raw physical interaction rows:    1,477,610
+Rows with score ≥ 700:              173,038
+Missing mappings:                         0
+Self-loops removed:                       0
+Duplicate directions collapsed:      86,519
+
+Final genes:                        10,746
+Final unique edges:                 86,519
 ```
 
-### Network properties
-
-Calculate:
+Output:
 
 ```text
-node degree
-Leiden community membership
+results/network/string_physical_700_edges.tsv
 ```
 
-Leiden settings:
+---
+
+## 9. MAGMA–STRING overlap
+
+Comparison of the MAGMA and STRING gene sets produced:
+
+```text
+MAGMA genes:                 18,418
+STRING genes:                10,746
+Overlap:                      9,734
+
+MAGMA genes represented
+in STRING:                    52.9%
+
+STRING genes with
+MAGMA scores:                 90.6%
+```
+
+The 9,734 overlapping genes have both common-variant association information and STRING network information.
+
+Network topology is calculated on the full STRING network, not only the MAGMA-overlapping genes.
+
+---
+
+## 10. Network degree and connected components
+
+Script:
+
+```text
+scripts/calculate_network_properties.py
+```
+
+For each STRING gene, the analysis calculated:
+
+```text
+degree
+connected component
+component size
+largest-component membership
+```
+
+Network:
+
+```text
+Genes:                  10,746
+Edges:                  86,519
+Connected components:      344
+```
+
+Largest connected component:
+
+```text
+Genes:                    9,830
+Fraction of network:      91.5%
+```
+
+Genes outside the largest component:
+
+```text
+916
+```
+
+Degree is defined using the full 10,746-gene STRING network.
+
+---
+
+## 11. Leiden communities
+
+Leiden community detection used:
 
 ```text
 objective: modularity
 network: unweighted
 random seed: 42
-iterations: until convergence
 ```
 
-### Later analyses
-
-1. Connectivity:
+An initial partition of the complete network produced:
 
 ```text
-MAGMA Z-score ~ network degree + covariates
+394 communities
+modularity = 0.801593
 ```
 
-2. Community enrichment:
+Inspection showed that:
 
 ```text
-Are particular network communities enriched for height association?
+51 communities occurred in the giant component
+343 corresponded to the 343 smaller disconnected components
 ```
 
-3. Seed proximity:
+The final primary community partition was therefore calculated explicitly within the giant connected component.
+
+Script:
 
 ```text
-Are common-variant height signals closer than expected to rare,
-large-effect height seed genes?
+scripts/calculate_giant_leiden.py
 ```
 
-RWR, matched-seed permutations, and gene-property models will be implemented only after the MAGMA and STRING gene tables are finalized.
+Final giant-component network:
+
+```text
+Genes:        9,830
+Edges:       85,576
+Communities:     51
+Modularity: 0.798286
+```
+
+Final network-property table:
+
+```text
+results/network/string_physical_700_gene_properties_final.tsv
+```
+
+Primary definitions:
+
+```text
+Degree:
+full 10,746-gene STRING network
+
+Community:
+9,830-gene giant connected component
+
+Seed proximity:
+giant connected component
+```
+
+---
+
+## 12. Current pipeline status
+
+```text
+Raw height GWAS                           Done
+Clean and match common SNPs               Done
+Assign SNPs to genes                      Done
+Calculate MAGMA gene scores               Done
+Add gene symbols / prepare gene table     Done
+Build cleaned STRING physical network     Done
+Check MAGMA–STRING overlap                Done
+Calculate network degree                  Done
+Identify connected components             Done
+Calculate final Leiden communities        Done
+Merge MAGMA + network properties          NEXT
+Connectivity analysis                     later
+Community analysis                        later
+Prepare independent height seed genes     later
+Seed-proximity / RWR analysis             later
+```
+
+---
+
+## 13. Next step: MAGMA–network merge
+
+Merge:
+
+```text
+results/gene_tables/height_35up_10down_genes.tsv
+```
+
+with:
+
+```text
+results/network/string_physical_700_gene_properties_final.tsv
+```
+
+by:
+
+```text
+SYMBOL
+```
+
+Expected initial overlap:
+
+```text
+9,734 genes
+```
+
+The merged analysis table should include:
+
+```text
+GENE
+SYMBOL
+CHR
+START
+STOP
+NSNPS
+NPARAM
+N
+ZSTAT
+P
+degree
+component
+component_size
+in_largest_component
+leiden_community_giant
+```
+
+---
+
+## 14. Planned analyses
+
+### Connectivity
+
+Test whether stronger common-variant association is related to network connectivity.
+
+```text
+MAGMA ZSTAT ~ degree + covariates
+```
+
+### Community organization
+
+Test whether height-associated signal is distributed non-randomly across the 51 communities of the giant STRING component.
+
+### Seed proximity
+
+Test whether common-variant height association is concentrated near independently defined rare, large-effect height genes.
+
+Workflow:
+
+```text
+independent seed genes
+→ map seeds to STRING
+→ calculate network proximity / RWR
+→ exclude seed genes from the tested gene set
+→ relate MAGMA signal to seed proximity
+→ compare with matched random seed sets
+```
+
+Seed genes remain in the network when proximity is calculated but are excluded from the downstream MAGMA–proximity association test.
+
+RWR, matched-seed permutations, publication-attention adjustment, and final gene-property models will be implemented after the MAGMA–network merge is finalized.
