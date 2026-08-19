@@ -192,6 +192,10 @@ Expanded to:
 
 PC1 ... PC16
 
+PC1-PC16 means the first 16 principal components of genetic variation.
+
+Each PC is a numeric variable that summarizes a major pattern of genetic similarity/difference across participants.
+
 Also created:
 
 age2 = age_at_measurement^2
@@ -300,13 +304,13 @@ EUR sample subset:
 PLINK2 subset command:
 
 plink2 \
-  --pfile /tmp/chr22_test/acaf_threshold.chr22 \
-  --keep /tmp/chr22_test/eur_keep.txt \
-  --snps-only just-acgt \
-  --max-alleles 2 \
-  --set-all-var-ids '@:#:$r:$a' \
-  --make-pgen \
-  --out /tmp/chr22_test/height_eur_chr22
+  --pfile /tmp/chr22_test/acaf_threshold.chr22 \   # Input chr22 PGEN dataset
+  --keep /tmp/chr22_test/eur_keep.txt \             # Keep only EUR analysis participants
+  --snps-only just-acgt \                            # Keep only simple A/C/G/T SNPs
+  --max-alleles 2 \                                  # Keep only biallelic variants
+  --set-all-var-ids '@:#:$r:$a' \                   # Rename variants as chr:position:ref:alt
+  --make-pgen \                                      # Write a new filtered PGEN dataset
+  --out /tmp/chr22_test/height_eur_chr22             # Output prefix
 
 13. Common-variant filtering on chr22
 
@@ -351,7 +355,7 @@ Sex
 
 Age
 
-Age²
+Age² #allows for curved age relationship, not just linear
 
 16 principal components
 
@@ -386,18 +390,29 @@ NR==1 {print "#FID","IID","SEX"; next}
 
 Development-only Step 2:
 
+# Run REGENIE association testing
 regenie \
+  # Step 2 = test variants for association with the phenotype
   --step 2 \
+  # Input filtered chr22 PGEN genotype dataset
   --pgen /tmp/chr22_test/height_eur_chr22_maf01 \
+  # Phenotype file containing height_irnt
   --phenoFile /tmp/chr22_test/height_pheno.tsv \
+  # Covariate file containing sex, age, age², and PCs
   --covarFile /tmp/chr22_test/height_covar.tsv \
+  # Use inverse-normal transformed height as the phenotype
   --phenoCol height_irnt \
+  # Specify that height is a quantitative trait
   --qt \
+  # Development test only: run Step 2 without Step 1 predictions
   --ignore-pred \
+  # Process variants in blocks of 400
   --bsize 400 \
+  # Use 4 CPU threads
   --threads 4 \
+  # Output file prefix
   --out /tmp/chr22_test/height_chr22_test
-
+  
 This was a genuine chromosome 22 GWAS, but only a development test because:
 
 Only chr22 was analyzed.
@@ -421,11 +436,16 @@ Some ACAF variants had extreme genotype missingness in the EUR subset.
 17. Variant missingness diagnosis
 
 Variant missingness was calculated:
+for each chr22 variant, how many participants were missing a genotype call.
 
 plink2 \
   --pfile /tmp/chr22_test/height_eur_chr22_maf01 \
   --missing variant-only \
   --out /tmp/chr22_test/chr22_missing
+
+MISSING_CT   = number of participants missing that genotype
+OBS_CT       = number of participants considered
+F_MISS       = fraction missing
 
 Among 70,298 variants:
 
@@ -664,17 +684,17 @@ Two array-QC specifications were evaluated before freezing the Step 1 workflow.
 Initial conservative QC
 
 plink2 \
-  --bfile /tmp/array_step1/arrays \
-  --keep /tmp/array_step1/step1_keep_fid_iid.txt \
-  --autosome \
-  --snps-only just-acgt \
-  --max-alleles 2 \
-  --maf 0.01 \
-  --mac 100 \
-  --geno 0.01 \
-  --hwe 1e-15 \
-  --make-pgen \
-  --out /tmp/array_step1/arrays_eur_qc
+  --bfile /tmp/array_step1/arrays \                         # Raw All of Us microarray genotype data
+  --keep /tmp/array_step1/step1_keep_fid_iid.txt \          # Keep final EUR analysis participants
+  --autosome \                                               # Autosomes 1–22 only
+  --snps-only just-acgt \                                    # Simple A/C/G/T SNPs only
+  --max-alleles 2 \                                          # Biallelic variants only
+  --maf 0.01 \                                               # Minor allele frequency ≥ 1%
+  --mac 100 \                                                # At least 100 minor-allele copies
+  --geno 0.01 \                                              # ≤1% genotype missingness
+  --hwe 1e-15 \                                              # Hardy-Weinberg QC threshold
+  --make-pgen \                                              # Create filtered PGEN dataset
+  --out /tmp/array_step1/arrays_eur_qc                       # Output prefix
 
 Result:
 
@@ -732,7 +752,7 @@ For chromosome 1, the pruning log showed:
 --maf 0.05
 --indep-pairwise 50 5 0.2
 
-Thus Luke's Step 1 preparation used:
+Luke's Step 1 preparation used:
 
 MAF ≥ 5%
 
@@ -756,18 +776,18 @@ To match the structure of Luke's Step 1 preparation cleanly, the pruning pass is
 Current command:
 
 plink2 \
-  --bfile /tmp/array_step1/arrays \
-  --keep /tmp/array_step1/step1_keep_fid_iid.txt \
-  --autosome \
-  --snps-only just-acgt \
-  --max-alleles 2 \
-  --maf 0.05 \
-  --geno 0.05 \
-  --hwe 1e-8 \
-  --indep-pairwise 50 5 0.2 \
-  --threads 4 \
-  --out /tmp/array_step1/step1_prune
-
+  --bfile /tmp/array_step1/arrays \                         # Raw All of Us microarray genotype data
+  --keep /tmp/array_step1/step1_keep_fid_iid.txt \          # Keep final 283,284 EUR analysis participants
+  --autosome \                                               # Autosomes 1–22 only
+  --snps-only just-acgt \                                    # Simple A/C/G/T SNPs only
+  --max-alleles 2 \                                          # Biallelic variants only
+  --maf 0.05 \                                               # Keep variants with MAF ≥ 5%
+  --geno 0.05 \                                              # Remove variants missing in >5% of participants
+  --hwe 1e-8 \                                               # Hardy-Weinberg QC threshold
+  --indep-pairwise 50 5 0.2 \                                # LD-prune: 50-SNP window, shift 5 SNPs, r² threshold 0.2
+  --threads 4 \                                               # Use 4 CPU threads
+  --out /tmp/array_step1/step1_prune                         # Output pruning files
+  
 Purpose:
 
 Restrict to the final 283,284-person EUR analysis sample.
