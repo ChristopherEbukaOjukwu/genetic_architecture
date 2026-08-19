@@ -386,6 +386,29 @@ Output:
 results/network/string_physical_700_edges.tsv
 ```
 
+----------
+
+## Leiden Validation
+
+The preliminary Leiden run used the default iteration count. The final partition will be rerun with:
+
+```python
+n_iterations=-1
+```
+so optimization continues until convergence.
+
+Stability will then be checked across 25–50 random seeds using:
+
+```text
+Community count: number of Leiden communities detected.
+Modularity: how strongly the network is divided into dense within-community groups.
+NMI: similarity of community assignments between two runs.
+ARI: similarity of which gene pairs are grouped together between two runs, adjusted for chance.
+```
+
+The seed-42 partition will be retained as the primary result if these metrics are stable across runs.
+
+
 ---
 
 ## 9. MAGMA–STRING overlap
@@ -527,6 +550,7 @@ Check MAGMA–STRING overlap                Done
 Calculate network degree                  Done
 Identify connected components             Done
 Calculate final Leiden communities        Done
+Validate Leiden                           NEXT
 Merge MAGMA + network properties          NEXT
 Connectivity analysis                     later
 Community analysis                        later
