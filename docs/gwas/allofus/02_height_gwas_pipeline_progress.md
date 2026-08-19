@@ -1,4 +1,4 @@
-All of Us Height GWAS — Pipeline Progress
+All of Us Height GWAS --- Pipeline Progress
 
 1. Analysis objective
 
