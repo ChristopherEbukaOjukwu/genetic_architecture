@@ -67,7 +67,7 @@ Median: 167.6 cm
 Max:    226.1 cm
 
 4. Repeated-height handling
-
+   
 Participants with at least one valid numeric height:
 
 507,353
